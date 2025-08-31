@@ -1,0 +1,205 @@
+import { betterAuth, keyof } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { nextCookies } from "better-auth/next-js";
+import {
+  twoFactor,
+  username,
+  magicLink,
+  emailOTP,
+  admin,
+  apiKey,
+  organization,
+  bearer,
+  multiSession,
+  openAPI,
+} from "better-auth/plugins";
+import { Profanity } from "@2toad/profanity";
+
+import { env } from "@/env/server";
+import { db, schema } from "@/server/db";
+import { APP_NAME } from "@/constants";
+import { getRedis } from "@/server/cache";
+import { hashBuffer, generateId } from "@/lib/id";
+import {
+  SHORT_LIVED_TOKEN,
+  LONG_LIVED_TOKEN,
+  FRESH_TOKEN,
+  MIN_PASSWORD_LENGTH,
+  MAX_PASSWORD_LENGTH,
+  MIN_USERNAME_LENGTH,
+  MAX_USERNAME_LENGTH,
+} from "./config";
+
+const profanity = new Profanity({ languages: ["en", "es"] });
+
+export const auth = betterAuth({
+  appName: APP_NAME,
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    usePlural: true,
+    camelCase: false,
+    schema,
+  }),
+  secondaryStorage: {
+    get: async (key) => {
+      const redis = await getRedis();
+      return redis.get(key);
+    },
+    set: async (key, value, ttl) => {
+      const redis = await getRedis();
+      if (typeof ttl !== "undefined") {
+        return redis.set(key, value, {
+          expiration: { type: "EX", value: ttl },
+        });
+      }
+      return redis.set(key, value);
+    },
+    delete: async (key) => {
+      const redis = await getRedis();
+      await redis.del(key);
+    },
+  },
+  user: {
+    changeEmail: {
+      enabled: true,
+    },
+    deleteUser: {
+      enabled: true,
+      beforeDelete: async ({ id }) => {
+        console.log(id);
+      },
+      afterDelete: async ({ id }) => {
+        console.log(id);
+      },
+      deleteTokenExpiresIn: SHORT_LIVED_TOKEN,
+      sendDeleteAccountVerification: async ({ token, url, user }) => {
+        console.log(token, url, user);
+      },
+    },
+    additionalFields: {},
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      allowDifferentEmails: true,
+      allowUnlinkingAll: false,
+      updateUserInfoOnLink: true,
+      trustedProviders: ["google"],
+    },
+    encryptOAuthTokens: env.NODE_ENV === "production",
+    updateAccountOnSignIn: true,
+  },
+  session: {
+    expiresIn: LONG_LIVED_TOKEN,
+    freshAge: FRESH_TOKEN,
+    cookieCache: {
+      enabled: true,
+    },
+    additionalFields: {},
+  },
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: false,
+    requireEmailVerification: true,
+    minPasswordLength: MIN_PASSWORD_LENGTH,
+    maxPasswordLength: MAX_PASSWORD_LENGTH,
+    resetPasswordTokenExpiresIn: SHORT_LIVED_TOKEN,
+    revokeSessionsOnPasswordReset: false,
+    onPasswordReset: async ({ user }) => {
+      console.log(user);
+    },
+    password: {
+      hash: async (password) => {
+        const hashedPassword = await hashBuffer.digest(password);
+        return hashedPassword;
+      },
+      verify: async ({ password, hash }) => {
+        const hashedPassword = await hashBuffer.digest(password);
+        return hashedPassword === hash;
+      },
+    },
+  },
+  emailVerification: {
+    autoSignInAfterVerification: true,
+    sendOnSignIn: true,
+    sendOnSignUp: true,
+    expiresIn: SHORT_LIVED_TOKEN,
+    onEmailVerification: async (data) => {
+      console.log(data);
+    },
+    afterEmailVerification: async (data) => {
+      console.log(data);
+    },
+  },
+  verification: {
+    disableCleanup: env.NODE_ENV !== "production",
+  },
+  socialProviders: {
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    },
+  },
+  onAPIError: {
+    errorURL: "/error",
+    throw: false,
+    onError: async (error, ctx) => {
+      console.error(error, ctx);
+    },
+  },
+  plugins: [
+    nextCookies(),
+    twoFactor({
+      issuer: APP_NAME,
+      backupCodeOptions: {
+        amount: 10,
+        length: 12,
+        storeBackupCodes: env.NODE_ENV === "production" ? "encrypted" : "plain",
+      },
+    }),
+    username({
+      minUsernameLength: MIN_USERNAME_LENGTH,
+      maxUsernameLength: MAX_USERNAME_LENGTH,
+      validationOrder: {
+        username: "post-normalization",
+        displayUsername: "post-normalization",
+      },
+      usernameNormalization: (username) => {
+        return username.toLowerCase().replace(/[\s_]+/g, "-");
+      },
+      usernameValidator: async (username) => {
+        const isValid =
+          /^[a-zA-Z0-9-]+$/.test(username) && !profanity.exists(username);
+        return isValid;
+      },
+      displayUsernameNormalization: (username) => {
+        return username.toLowerCase().replace(/[\s_]+/g, "-");
+      },
+      displayUsernameValidator: async (username) => {
+        const isValid =
+          /^[a-zA-Z0-9-]+$/.test(username) && !profanity.exists(username);
+        return isValid;
+      },
+    }),
+    magicLink({
+      sendMagicLink: async ({ email, token, url }) => {
+        console.log(email, token, url);
+      },
+    }),
+    emailOTP({
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        console.log(email, otp, type);
+      },
+      overrideDefaultEmailVerification: true,
+    }),
+    admin(),
+    apiKey(),
+    organization(),
+    bearer(),
+    multiSession(),
+    openAPI(),
+  ],
+  telemetry: {
+    enabled: false,
+  },
+});
