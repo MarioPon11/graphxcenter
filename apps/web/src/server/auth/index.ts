@@ -156,6 +156,10 @@ export const auth = betterAuth({
         length: 12,
         storeBackupCodes: env.NODE_ENV === "production" ? "encrypted" : "plain",
       },
+      totpOptions: {
+        digits: 6,
+        period: 60,
+      },
     }),
     username({
       minUsernameLength: MIN_USERNAME_LENGTH,
@@ -182,15 +186,22 @@ export const auth = betterAuth({
       },
     }),
     magicLink({
+      storeToken: env.NODE_ENV === "production" ? "hashed" : "plain",
+      expiresIn: SHORT_LIVED_TOKEN,
       sendMagicLink: async ({ email, token, url }) => {
         console.log(email, token, url);
       },
     }),
     emailOTP({
+      overrideDefaultEmailVerification: true,
+      allowedAttempts: 6,
+      expiresIn: SHORT_LIVED_TOKEN,
+      otpLength: 6,
+      storeOTP: env.NODE_ENV === "production" ? "hashed" : "plain",
+      sendVerificationOnSignUp: true,
       sendVerificationOTP: async ({ email, otp, type }) => {
         console.log(email, otp, type);
       },
-      overrideDefaultEmailVerification: true,
     }),
     admin(),
     apiKey(),
