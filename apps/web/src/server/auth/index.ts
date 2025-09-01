@@ -9,7 +9,6 @@ import {
   admin,
   apiKey,
   organization,
-  bearer,
   multiSession,
   openAPI,
 } from "better-auth/plugins";
@@ -28,6 +27,9 @@ import {
   MAX_PASSWORD_LENGTH,
   MIN_USERNAME_LENGTH,
   MAX_USERNAME_LENGTH,
+  API_KEY_LENGTH,
+  API_KEY_MAX_NAME_LENGTH,
+  API_KEY_MIN_NAME_LENGTH,
 } from "./config";
 
 const profanity = new Profanity({ languages: ["en", "es"] });
@@ -203,12 +205,29 @@ export const auth = betterAuth({
         console.log(email, otp, type);
       },
     }),
-    admin(),
-    apiKey(),
-    organization(),
-    bearer(),
-    multiSession(),
+    apiKey({
+      apiKeyHeaders: ["x-api-key"],
+      customKeyGenerator: async ({ length, prefix }) => {
+        return `${prefix}_${generateId(length)}`;
+      },
+      defaultKeyLength: API_KEY_LENGTH,
+      defaultPrefix: "gxc",
+      disableKeyHashing: env.NODE_ENV !== "production",
+      enableMetadata: true,
+      keyExpiration: {
+        defaultExpiresIn: null,
+        minExpiresIn: LONG_LIVED_TOKEN,
+      },
+      maximumNameLength: API_KEY_MAX_NAME_LENGTH,
+      minimumNameLength: API_KEY_MIN_NAME_LENGTH,
+      requireName: true,
+    }),
+    multiSession({
+      maximumSessions: 5,
+    }),
     openAPI(),
+    admin(),
+    organization(),
   ],
   telemetry: {
     enabled: false,
