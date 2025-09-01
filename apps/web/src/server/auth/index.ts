@@ -31,6 +31,12 @@ import {
   API_KEY_MAX_NAME_LENGTH,
   API_KEY_MIN_NAME_LENGTH,
 } from "./config";
+import {
+  orgAc,
+  departmentManager,
+  departmentTeamLead,
+  member,
+} from "./access/organization";
 
 const profanity = new Profanity({ languages: ["en", "es"] });
 
@@ -226,8 +232,63 @@ export const auth = betterAuth({
       maximumSessions: 5,
     }),
     openAPI(),
+    organization({
+      ac: orgAc,
+      roles: {
+        departmentManager,
+        departmentTeamLead,
+        member,
+      },
+      organizationLimit: 5,
+      membershipLimit: 5000,
+      invitationLimit: 5000,
+      creatorRole: "departmentManager",
+      autoCreateOrganizationOnSignUp: false,
+      cancelPendingInvitationsOnReInvite: true,
+      invitationExpiresIn: LONG_LIVED_TOKEN,
+      requireEmailVerificationOnInvitation: true,
+      organizationDeletion: {
+        disabled: true,
+      },
+      sendInvitationEmail: async (data) => {
+        console.log(data);
+      },
+      teams: {
+        enabled: true,
+        allowRemovingAllTeams: false,
+        defaultTeam: {
+          enabled: true,
+          customCreateDefaultTeam: async (org) => {
+            return {
+              id: generateId(16),
+              name: "Default Team",
+              createdAt: new Date(),
+              organizationId: org.id,
+              updatedAt: new Date(),
+            };
+          },
+        },
+      },
+      organizationCreation: {
+        afterCreate: async (data) => {
+          console.log(data);
+        },
+        beforeCreate: async (data) => {
+          console.log(data);
+        },
+      },
+      allowUserToCreateOrganization: async (user) => {
+        // TODO: Add role check
+        console.log(user.role);
+        return true;
+      },
+      schema: {
+        organization: {
+          modelName: "department",
+        },
+      },
+    }),
     admin(),
-    organization(),
   ],
   telemetry: {
     enabled: false,
