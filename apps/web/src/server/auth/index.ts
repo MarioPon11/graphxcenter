@@ -37,6 +37,14 @@ import {
   departmentTeamLead,
   member,
 } from "./access/organization";
+import {
+  ac,
+  adminRoles,
+  superAdmin,
+  humanResources,
+  developer,
+  user,
+} from "./access/admin";
 
 const profanity = new Profanity({ languages: ["en", "es"] });
 
@@ -84,7 +92,23 @@ export const auth = betterAuth({
         console.log(token, url, user);
       },
     },
-    additionalFields: {},
+    additionalFields: {
+      status: {
+        type: "string",
+        fieldName: "status",
+        input: false,
+        returned: true,
+        defaultValue: "active",
+        sortable: true,
+      },
+      position: {
+        type: "string",
+        fieldName: "position",
+        returned: true,
+        input: true,
+        required: true,
+      },
+    },
   },
   account: {
     accountLinking: {
@@ -288,7 +312,17 @@ export const auth = betterAuth({
         },
       },
     }),
-    admin(),
+    admin({
+      ac,
+      roles: {
+        superAdmin,
+        humanResources,
+        developer,
+        user,
+      },
+      adminRoles,
+      defaultRole: "user",
+    }),
   ],
   telemetry: {
     enabled: false,
