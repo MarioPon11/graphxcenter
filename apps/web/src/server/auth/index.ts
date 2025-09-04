@@ -86,23 +86,7 @@ export const auth = betterAuth({
         console.log(token, url, user);
       },
     },
-    additionalFields: {
-      status: {
-        type: "string",
-        fieldName: "status",
-        input: false,
-        returned: true,
-        defaultValue: "active",
-        sortable: true,
-      },
-      position: {
-        type: "string",
-        fieldName: "position",
-        returned: true,
-        input: true,
-        required: true,
-      },
-    },
+    additionalFields: {},
   },
   account: {
     accountLinking: {

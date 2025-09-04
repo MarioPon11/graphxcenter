@@ -65,6 +65,4 @@ export const adminRoles = Object.keys({
   superAdmin,
   admin,
   developer,
-  manager,
-  user,
 });

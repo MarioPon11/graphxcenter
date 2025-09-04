@@ -6,11 +6,13 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
+import { auth } from "@/server/auth";
+import { adminRoles } from "@/server/auth/access/admin";
 
 /**
  * 1. CONTEXT
@@ -27,6 +29,7 @@ import { db } from "@/server/db";
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   return {
     db,
+    auth: auth.api,
     ...opts,
   };
 };
@@ -97,6 +100,62 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 /**
+ * Middleware for checking if the user is authenticated
+ */
+const authMiddleware = t.middleware(async ({ next, ctx }) => {
+  const session = await ctx.auth.getSession({
+    headers: ctx.headers,
+  });
+
+  if (!session) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Session was not found",
+      cause: { session, data: "From authMiddleware" },
+    });
+  }
+
+  return next({
+    ctx: {
+      session,
+      ...ctx,
+    },
+  });
+});
+
+/**
+ * Middleware for checking if the user is a super admin
+ */
+const adminMiddleware = t.middleware(async ({ next, ctx }) => {
+  const session = await ctx.auth.getSession({
+    headers: ctx.headers,
+  });
+
+  if (!session) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Session was not found",
+      cause: { session, data: "From adminMiddleware" },
+    });
+  }
+
+  if (!adminRoles.includes(session.user.role ?? "")) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You are not authorized to access this resource",
+      cause: { session, data: "From adminMiddleware" },
+    });
+  }
+
+  return next({
+    ctx: {
+      session,
+      ...ctx,
+    },
+  });
+});
+
+/**
  * Public (unauthenticated) procedure
  *
  * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
@@ -104,3 +163,5 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+export const protectedProcedure = t.procedure.use(authMiddleware);
+export const adminProcedure = t.procedure.use(adminMiddleware);
