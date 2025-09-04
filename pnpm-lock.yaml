@@ -26,6 +26,9 @@ importers:
       '@better-auth/utils':
         specifier: ^0.2.6
         version: 0.2.6
+      '@hookform/resolvers':
+        specifier: ^5.2.1
+        version: 5.2.1(react-hook-form@7.62.0(react@19.1.1))
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -68,6 +71,9 @@ importers:
       react-dom:
         specifier: ^19.1.1
         version: 19.1.1(react@19.1.1)
+      react-hook-form:
+        specifier: ^7.62.0
+        version: 7.62.0(react@19.1.1)
       redis:
         specifier: ^5.8.2
         version: 5.8.2
