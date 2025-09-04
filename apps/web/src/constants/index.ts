@@ -1,1 +1,1 @@
-export const APP_NAME = "GXS Central";
+export const APP_NAME = "GXS Calendar";

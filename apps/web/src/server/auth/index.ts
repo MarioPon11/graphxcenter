@@ -1,4 +1,4 @@
-import { betterAuth, keyof } from "better-auth";
+import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import {
@@ -8,7 +8,6 @@ import {
   emailOTP,
   admin,
   apiKey,
-  organization,
   multiSession,
   openAPI,
 } from "better-auth/plugins";
@@ -32,17 +31,12 @@ import {
   API_KEY_MIN_NAME_LENGTH,
 } from "./config";
 import {
-  orgAc,
-  departmentManager,
-  departmentTeamLead,
-  member,
-} from "./access/organization";
-import {
   ac,
   adminRoles,
   superAdmin,
-  humanResources,
+  admin as adminRole,
   developer,
+  manager,
   user,
 } from "./access/admin";
 
@@ -256,68 +250,13 @@ export const auth = betterAuth({
       maximumSessions: 5,
     }),
     openAPI(),
-    organization({
-      ac: orgAc,
-      roles: {
-        departmentManager,
-        departmentTeamLead,
-        member,
-      },
-      organizationLimit: 5,
-      membershipLimit: 5000,
-      invitationLimit: 5000,
-      creatorRole: "departmentManager",
-      autoCreateOrganizationOnSignUp: false,
-      cancelPendingInvitationsOnReInvite: true,
-      invitationExpiresIn: LONG_LIVED_TOKEN,
-      requireEmailVerificationOnInvitation: true,
-      organizationDeletion: {
-        disabled: true,
-      },
-      sendInvitationEmail: async (data) => {
-        console.log(data);
-      },
-      teams: {
-        enabled: true,
-        allowRemovingAllTeams: false,
-        defaultTeam: {
-          enabled: true,
-          customCreateDefaultTeam: async (org) => {
-            return {
-              id: generateId(16),
-              name: "Default Team",
-              createdAt: new Date(),
-              organizationId: org.id,
-              updatedAt: new Date(),
-            };
-          },
-        },
-      },
-      organizationCreation: {
-        afterCreate: async (data) => {
-          console.log(data);
-        },
-        beforeCreate: async (data) => {
-          console.log(data);
-        },
-      },
-      allowUserToCreateOrganization: async (user) => {
-        // TODO: Add role check
-        console.log(user.role);
-        return true;
-      },
-      schema: {
-        organization: {
-          modelName: "department",
-        },
-      },
-    }),
     admin({
       ac,
       roles: {
         superAdmin,
-        humanResources,
+        admin: adminRole,
         developer,
+        manager,
         user,
       },
       adminRoles,
