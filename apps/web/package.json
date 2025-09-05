@@ -41,6 +41,7 @@
     "react-hook-form": "^7.62.0",
     "redis": "^5.8.2",
     "server-only": "^0.0.1",
+    "sonner": "^2.0.7",
     "superjson": "^2.2.2",
     "zod": "^4.1.5"
   },
