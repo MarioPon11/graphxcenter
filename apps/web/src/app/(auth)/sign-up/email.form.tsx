@@ -4,7 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
 
 import {
   Form,
@@ -19,7 +19,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@repo/ui/components/tooltip";
-import { Info } from "lucide-react";
 import { Input } from "@repo/ui/components/input";
 import { cn } from "@repo/ui/lib/utils";
 import { Button } from "@repo/ui/components/button";
