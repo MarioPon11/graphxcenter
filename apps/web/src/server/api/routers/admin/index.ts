@@ -3,7 +3,7 @@ import { usersRouter } from "./users";
 import { bansRouter } from "./bans";
 import { accountsRouter } from "./accounts";
 
-export const postRouter = createTRPCRouter({
+export const adminRouter = createTRPCRouter({
   users: usersRouter,
   bans: bansRouter,
   accounts: accountsRouter,
