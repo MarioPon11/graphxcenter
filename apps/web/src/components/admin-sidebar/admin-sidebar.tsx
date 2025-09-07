@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   BookOpen,
@@ -22,7 +23,6 @@ import {
 import { APP_NAME } from "@/constants";
 import { Logo } from "@/components/icons";
 
-// This is sample data.
 const data = {
   user: {
     name: "shadcn",
@@ -139,7 +139,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <div>
+        <div className="flex items-center gap-2">
           <Logo />
           <span>{APP_NAME}</span>
         </div>
