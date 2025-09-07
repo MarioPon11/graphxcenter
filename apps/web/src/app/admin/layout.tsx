@@ -14,12 +14,28 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@repo/ui/components/sidebar";
+import { auth } from "@/server/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { adminRoles } from "@/server/auth/access/admin";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/sign-in");
+  }
+
+  if (!adminRoles.includes(session.user.role ?? "")) {
+    redirect("/dashboard");
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
