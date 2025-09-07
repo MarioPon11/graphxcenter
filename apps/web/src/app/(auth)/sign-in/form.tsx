@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -27,6 +27,8 @@ import {
 
 import { Logo, Google } from "@/components/icons";
 import { APP_NAME } from "@/constants";
+import { toast } from "sonner";
+import { signIn } from "@/hooks/auth";
 
 const formSchema = z.object({
   email: z.email(),
@@ -36,6 +38,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [googleSignIn, setGoogleSignIn] = useState<boolean>(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,7 +47,29 @@ export function LoginForm({
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    signIn.magicLink({
+      email: values.email,
+    });
+  }
+
+  function handleGoogleSignIn() {
+    setGoogleSignIn(true);
+    toast.promise(
+      signIn.social({
+        provider: "google",
+      }),
+      {
+        loading: "Signing in with Google...",
+        success: () => {
+          setGoogleSignIn(false);
+          return "Signed in with Google";
+        },
+        error: () => {
+          setGoogleSignIn(false);
+          return "Failed to sign in with Google";
+        },
+      },
+    );
   }
 
   return (
@@ -116,6 +141,8 @@ export function LoginForm({
               <Button
                 type="button"
                 className="w-full bg-white text-black hover:bg-white/80 active:bg-white/60"
+                onClick={handleGoogleSignIn}
+                disabled={googleSignIn}
               >
                 <Google />
                 Continue with Google
