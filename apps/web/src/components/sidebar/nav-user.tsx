@@ -107,7 +107,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleSignOut} variant="destructive">
               <LogOut />
               Log out
             </DropdownMenuItem>

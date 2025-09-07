@@ -10,9 +10,9 @@ import {
   SquareTerminal,
 } from "lucide-react";
 
-import { NavAdmin } from "@/components/admin-sidebar/nav-admin";
-import { NavMain } from "@/components/admin-sidebar/nav-main";
-import { NavUser } from "@/components/admin-sidebar/nav-user";
+import { NavAdmin } from "@/components/sidebar/nav-admin";
+import { NavMain } from "@/components/sidebar/nav-main";
+import { NavUser } from "@/components/sidebar/nav-user";
 import {
   Sidebar,
   SidebarContent,
