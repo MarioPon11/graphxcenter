@@ -94,7 +94,7 @@ export const eventRecurrenceRelations = relations(
       fields: [eventRecurrence.eventId],
       references: [events.id],
     }),
-    eventOccurrences: many(eventOccurrences),
+    occurrences: many(eventOccurrences),
   }),
 );
 
