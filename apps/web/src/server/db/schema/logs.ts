@@ -16,7 +16,7 @@ type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 
-type LogData =
+export type LogData =
   | Prettify<{ logType: "user" } & typeof users.$inferSelect>
   | Prettify<{ logType: "room" } & typeof rooms.$inferSelect>
   | Prettify<{ logType: "event" } & typeof events.$inferSelect>
