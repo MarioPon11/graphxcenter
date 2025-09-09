@@ -1,12 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Loader2, Eye, EyeClosed } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 import { cn } from "@repo/ui/lib/utils";
 import {
@@ -50,6 +50,9 @@ export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const searchParams = useSearchParams();
   const emailValue = searchParams.get("sign-up");
 
@@ -68,6 +71,7 @@ export function SignUpForm({
       email: values.email,
       name: values.name,
       password: values.password,
+      callbackURL: "/sign-up",
     });
     if (res.error) {
       console.log("Error signing up", res.error);
@@ -103,7 +107,7 @@ export function SignUpForm({
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="John Doe" />
+                      <Input {...field} placeholder="John Doe" tabIndex={1} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -122,6 +126,7 @@ export function SignUpForm({
                         type="email"
                         placeholder="john.doe@example.com"
                         {...field}
+                        tabIndex={2}
                       />
                     </FormControl>
                     <FormMessage />
@@ -134,13 +139,26 @@ export function SignUpForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="********"
-                        {...field}
-                      />
-                    </FormControl>
+                    <div className="relative">
+                      <FormControl>
+                        <Input
+                          className="pr-10"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          {...field}
+                          tabIndex={3}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        className="absolute top-1/2 right-0.5 aspect-square size-8 -translate-y-1/2 rounded-full"
+                        variant="ghost"
+                        onClick={() => setShowPassword(!showPassword)}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeClosed /> : <Eye />}
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -151,13 +169,28 @@ export function SignUpForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="********"
-                        {...field}
-                      />
-                    </FormControl>
+                    <div className="relative">
+                      <FormControl>
+                        <Input
+                          className="pr-10"
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm your password"
+                          {...field}
+                          tabIndex={4}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        className="absolute top-1/2 right-0.5 aspect-square size-8 -translate-y-1/2 rounded-full"
+                        variant="ghost"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? <EyeClosed /> : <Eye />}
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -166,6 +199,7 @@ export function SignUpForm({
                 type="submit"
                 className="w-full"
                 disabled={form.formState.isSubmitting}
+                tabIndex={5}
               >
                 {form.formState.isSubmitting ? (
                   <Loader2 className="size-4 animate-spin" />
