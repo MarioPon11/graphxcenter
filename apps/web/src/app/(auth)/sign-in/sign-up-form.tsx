@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Info, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 import { cn } from "@repo/ui/lib/utils";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,61 +19,60 @@ import {
 } from "@repo/ui/components/form";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@repo/ui/components/tooltip";
 
-import { Logo, Google } from "@/components/icons";
+import { Logo } from "@/components/icons";
 import { APP_NAME } from "@/constants";
-import { toast } from "sonner";
-import { signIn } from "@/hooks/auth";
+import { signUp } from "@/hooks/auth";
+import { MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from "@/server/auth/config";
 
-const formSchema = z.object({
-  email: z.email(),
-});
+const formSchema = z
+  .object({
+    email: z.email().refine((email) => email.includes("@graphxsource"), {
+      error: "Only graphxsource emails are allowed",
+    }),
+    name: z.string().min(1),
+    password: z
+      .string()
+      .min(MIN_PASSWORD_LENGTH, {
+        error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+      })
+      .max(MAX_PASSWORD_LENGTH, {
+        error: `Password must be at most ${MAX_PASSWORD_LENGTH} characters long`,
+      }),
+    confirmPassword: z.string().min(1),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    error: "Passwords do not match",
+    path: ["confirmPassword", "password"],
+  });
 
-export function LoginForm({
+export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [googleSignIn, setGoogleSignIn] = useState<boolean>(false);
+  const searchParams = useSearchParams();
+  const emailValue = searchParams.get("sign-up");
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      email: emailValue ?? "",
+      name: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const res = await signIn.magicLink({
+    const res = await signUp.email({
       email: values.email,
+      name: values.name,
+      password: values.password,
     });
     if (res.error) {
-      console.log(res.error.statusText);
+      console.log("Error signing up", res.error);
       form.setError("email", { message: res.error.message });
     }
-  }
-
-  function handleGoogleSignIn() {
-    setGoogleSignIn(true);
-    toast.promise(
-      signIn.social({
-        provider: "google",
-      }),
-      {
-        loading: "Signing in with Google...",
-        success: () => {
-          setGoogleSignIn(false);
-          return "Signed in with Google";
-        },
-        error: () => {
-          setGoogleSignIn(false);
-          return "Failed to sign in with Google";
-        },
-      },
-    );
   }
 
   return (
@@ -93,28 +92,30 @@ export function LoginForm({
               </Link>
               <h1 className="text-xl font-bold">Welcome to {APP_NAME}</h1>
               <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <Link href="/sign-up" className="underline underline-offset-4">
-                  Sign up
-                </Link>
+                Use your graphxsource email to sign in.
               </div>
             </div>
             <div className="flex flex-col gap-6">
               <FormField
                 control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="John Doe" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="email"
-                render={({ field, fieldState }) => (
+                render={({ field }) => (
                   <FormItem>
                     <div className="flex items-start gap-2">
                       <FormLabel>Email</FormLabel>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="size-4 -translate-y-0.5" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          We&apos;ll send you an email to verify your account.
-                        </TooltipContent>
-                      </Tooltip>
                     </div>
                     <FormControl>
                       <Input
@@ -123,11 +124,40 @@ export function LoginForm({
                         {...field}
                       />
                     </FormControl>
-                    {!fieldState.error && (
-                      <FormDescription>
-                        We&apos;ll send you an email to verify your account.
-                      </FormDescription>
-                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="********"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="********"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -142,22 +172,6 @@ export function LoginForm({
                 ) : (
                   <span>Continue with email</span>
                 )}
-              </Button>
-            </div>
-            <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-              <span className="bg-background text-muted-foreground relative z-10 px-2">
-                Or
-              </span>
-            </div>
-            <div className="flex gap-4">
-              <Button
-                type="button"
-                className="w-full bg-white text-black hover:bg-white/80 active:bg-white/60"
-                onClick={handleGoogleSignIn}
-                disabled={googleSignIn}
-              >
-                <Google />
-                Continue with Google
               </Button>
             </div>
           </div>

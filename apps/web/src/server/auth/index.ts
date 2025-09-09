@@ -12,6 +12,7 @@ import {
   openAPI,
 } from "better-auth/plugins";
 import { Profanity } from "@2toad/profanity";
+import { createAuthMiddleware, APIError } from "better-auth/api";
 
 import { env } from "@/env/server";
 import { db, schema } from "@/server/db";
@@ -155,6 +156,17 @@ export const auth = betterAuth({
   onAPIError: {
     errorURL: "/error",
     throw: false,
+  },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/sign-in/magic-link") {
+        if (!ctx.body.email.includes("@graphxsource")) {
+          throw new APIError("BAD_REQUEST", {
+            message: "Only graphxsource emails are allowed",
+          });
+        }
+      }
+    }),
   },
   plugins: [
     nextCookies(),
