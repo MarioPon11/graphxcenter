@@ -91,14 +91,6 @@ export function SignUpForm({
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-6">
-            {form.formState.errors.root && (
-              <Alert variant="destructive">
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>
-                  {form.formState.errors.root.message}
-                </AlertDescription>
-              </Alert>
-            )}
             <div className="flex flex-col items-center gap-2">
               <Link
                 href="/"
@@ -115,6 +107,14 @@ export function SignUpForm({
               </div>
             </div>
             <div className="flex flex-col gap-6">
+              {form.formState.errors.root && (
+                <Alert variant="destructive">
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    {form.formState.errors.root.message}
+                  </AlertDescription>
+                </Alert>
+              )}
               <FormField
                 control={form.control}
                 name="name"

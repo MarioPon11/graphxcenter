@@ -11,3 +11,5 @@ export const MAX_USERNAME_LENGTH = 20;
 export const API_KEY_LENGTH = 64;
 export const API_KEY_MAX_NAME_LENGTH = 128;
 export const API_KEY_MIN_NAME_LENGTH = 4;
+
+export const OTP_LENGTH = 6;
