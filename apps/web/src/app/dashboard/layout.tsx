@@ -16,6 +16,18 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/sign-in");
+  }
+
+  if (!session.user.username) {
+    redirect("/sign-up");
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
