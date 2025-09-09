@@ -109,6 +109,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    disableSignUp: true,
     autoSignIn: false,
     requireEmailVerification: true,
     minPasswordLength: MIN_PASSWORD_LENGTH,
@@ -148,14 +149,12 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      disableSignUp: true,
     },
   },
   onAPIError: {
     errorURL: "/error",
     throw: false,
-    onError: async (error, ctx) => {
-      console.error(error, ctx);
-    },
   },
   plugins: [
     nextCookies(),
@@ -196,6 +195,7 @@ export const auth = betterAuth({
       },
     }),
     magicLink({
+      disableSignUp: true,
       storeToken: env.NODE_ENV === "production" ? "hashed" : "plain",
       expiresIn: SHORT_LIVED_TOKEN,
       sendMagicLink: async ({ email, token, url }) => {
