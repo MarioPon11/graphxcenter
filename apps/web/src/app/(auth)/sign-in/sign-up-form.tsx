@@ -19,6 +19,7 @@ import {
 } from "@repo/ui/components/form";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
+import { Alert, AlertDescription, AlertTitle } from "@repo/ui/components/alert";
 
 import { Logo } from "@/components/icons";
 import { APP_NAME } from "@/constants";
@@ -75,7 +76,13 @@ export function SignUpForm({
     });
     if (res.error) {
       console.log("Error signing up", res.error);
-      form.setError("email", { message: res.error.message });
+      if (res.error.code === "FAILED_TO_CREATE_USER") {
+        form.setError("root", {
+          message: res.error.message ?? "Failed to create user",
+        });
+      } else {
+        form.setError("email", { message: res.error.message });
+      }
     }
   }
 
@@ -84,6 +91,14 @@ export function SignUpForm({
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-6">
+            {form.formState.errors.root && (
+              <Alert variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  {form.formState.errors.root.message}
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="flex flex-col items-center gap-2">
               <Link
                 href="/"

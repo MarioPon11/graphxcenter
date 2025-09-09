@@ -210,7 +210,7 @@ export const auth = betterAuth({
       storeOTP: env.NODE_ENV === "production" ? "hashed" : "plain",
       sendVerificationOnSignUp: true,
       sendVerificationOTP: async ({ email, otp, type }) => {
-        console.log(email, otp, type);
+        console.log("Sending verification OTP", email, otp, type);
       },
     }),
     apiKey({
