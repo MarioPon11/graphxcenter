@@ -5,7 +5,7 @@ import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Info } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
 
 import { cn } from "@repo/ui/lib/utils";
 import {
@@ -47,9 +47,13 @@ export function LoginForm({
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    signIn.magicLink({
+    const res = await signIn.magicLink({
       email: values.email,
     });
+    if (res.error) {
+      console.log(res.error.statusText);
+      form.setError("email", { message: res.error.message });
+    }
   }
 
   function handleGoogleSignIn() {
@@ -128,8 +132,16 @@ export function LoginForm({
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Continue with email
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <span>Continue with email</span>
+                )}
               </Button>
             </div>
             <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
