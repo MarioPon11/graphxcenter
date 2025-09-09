@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "email dev"
+    "email": "email dev"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +12,10 @@
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {
     "@react-email/preview-server": "4.2.9",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/react": "19.1.12",
+    "@types/react-dom": "19.1.9",
     "react-email": "4.2.9"
   },
   "dependencies": {
