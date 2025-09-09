@@ -11,15 +11,15 @@
   "license": "ISC",
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {
-    "@react-email/preview-server": "4.2.9",
+    "@react-email/preview-server": "4.2.10",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/react": "19.1.12",
     "@types/react-dom": "19.1.9",
-    "react-email": "4.2.9"
+    "react-email": "4.2.10"
   },
   "dependencies": {
-    "@react-email/components": "0.5.2",
+    "@react-email/components": "0.5.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   }
