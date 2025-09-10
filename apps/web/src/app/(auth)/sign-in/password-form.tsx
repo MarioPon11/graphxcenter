@@ -19,6 +19,7 @@ import {
 } from "@repo/ui/components/form";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
+import { Checkbox } from "@repo/ui/components/checkbox";
 
 import { Logo } from "@/components/icons";
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "@/server/auth/config";
@@ -36,7 +37,7 @@ const formSchema = z.object({
     .max(MAX_PASSWORD_LENGTH, {
       error: `Password must be at most ${MAX_PASSWORD_LENGTH} characters long`,
     }),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean(),
 });
 
 export function PasswordForm() {
@@ -58,8 +59,8 @@ export function PasswordForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const res = await signIn.email({
-      email: values.email,
-      password: values.password,
+      ...values,
+      callbackURL: "/dashboard",
     });
 
     if (res.error) {
@@ -124,34 +125,59 @@ export function PasswordForm() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <div className="relative">
-                      <FormControl>
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter your password"
-                          className="pr-10"
-                          {...field}
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute top-1/2 right-0.5 aspect-square size-8 -translate-y-1/2 rounded-full"
-                      >
-                        {showPassword ? <EyeClosed /> : <Eye />}
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-3">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <div className="relative">
+                        <FormControl>
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            className="pr-10"
+                            {...field}
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute top-1/2 right-0.5 aspect-square size-8 -translate-y-1/2 rounded-full"
+                        >
+                          {showPassword ? <EyeClosed /> : <Eye />}
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex items-center justify-between gap-2">
+                  <FormField
+                    control={form.control}
+                    name="rememberMe"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center gap-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>Remember me</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-blue-500 underline visited:text-blue-400 hover:text-blue-600 hover:no-underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
               <div className="space-y-2">
                 <Button
                   type="submit"
