@@ -5,7 +5,7 @@ import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, CircleCheck } from "lucide-react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 import { cn } from "@repo/ui/lib/utils";
@@ -20,6 +20,16 @@ import {
 } from "@repo/ui/components/form";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
+import {
+  AlertDialog,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@repo/ui/components/alert-dialog";
 
 import { Logo, Google } from "@/components/icons";
 import { APP_NAME } from "@/constants";
@@ -35,6 +45,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const [googleSignIn, setGoogleSignIn] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -70,7 +81,9 @@ export function LoginForm({
         setParam("sign-up", values.email);
       }
       form.setError("email", { message: res.error.message });
+      return;
     }
+    setIsOpen(true);
   }
 
   function handleGoogleSignIn() {
@@ -93,9 +106,42 @@ export function LoginForm({
     );
   }
 
+  function handleContinueWithPassword() {
+    setParam("sign-in", form.getValues("email"));
+  }
+
   return (
     <Form {...form}>
       <div className={cn("flex flex-col gap-6", className)} {...props}>
+        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader className="flex flex-col items-center gap-2">
+              <div className="flex size-12 items-center justify-center rounded-md border">
+                <CircleCheck className="size-10 text-green-500" />
+              </div>
+              <AlertDialogTitle className="text-center">
+                Check your email
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+            <div>
+              <AlertDialogDescription>
+                We&apos;ve sent you an email to verify your account. Please
+                click the link in the email to continue, or continue with your
+                password by clicking the button below.
+              </AlertDialogDescription>
+            </div>
+            <AlertDialogFooter className="">
+              <AlertDialogCancel className="flex-1">Close</AlertDialogCancel>
+              <AlertDialogAction
+                className="flex-1"
+                onClick={handleContinueWithPassword}
+              >
+                Continue with password
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-6">
             <div className="flex flex-col items-center gap-2">
