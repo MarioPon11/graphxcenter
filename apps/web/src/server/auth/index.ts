@@ -29,6 +29,7 @@ import {
   API_KEY_LENGTH,
   API_KEY_MAX_NAME_LENGTH,
   API_KEY_MIN_NAME_LENGTH,
+  OTP_LENGTH,
 } from "./config";
 import {
   ac,
@@ -136,10 +137,10 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     expiresIn: SHORT_LIVED_TOKEN,
     onEmailVerification: async (data) => {
-      console.log(data);
+      console.log("On email verification", data);
     },
     afterEmailVerification: async (data) => {
-      console.log(data);
+      console.log("After email verification", data);
     },
   },
   verification: {
@@ -206,11 +207,11 @@ export const auth = betterAuth({
       overrideDefaultEmailVerification: true,
       allowedAttempts: 6,
       expiresIn: SHORT_LIVED_TOKEN,
-      otpLength: 6,
+      otpLength: OTP_LENGTH,
       storeOTP: env.NODE_ENV === "production" ? "hashed" : "plain",
       sendVerificationOnSignUp: true,
       sendVerificationOTP: async ({ email, otp, type }) => {
-        console.log("Sending verification OTP", email, otp, type);
+        console.log("Sending verification OTP from plugin", email, otp, type);
       },
     }),
     apiKey({

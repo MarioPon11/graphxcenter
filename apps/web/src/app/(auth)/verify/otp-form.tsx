@@ -18,12 +18,13 @@ import { Button } from "@repo/ui/components/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@repo/ui/components/form";
-import { verifyEmail, emailOtp } from "@/hooks/auth";
+import { emailOtp } from "@/hooks/auth";
 import { OTP_LENGTH } from "@/server/auth/config";
 import { Alert, AlertDescription, AlertTitle } from "@repo/ui/components/alert";
 import { cn } from "@repo/ui/lib/utils";
@@ -32,10 +33,14 @@ import { Logo } from "@/components/icons";
 import { APP_NAME } from "@/constants";
 
 const formSchema = z.object({
-  otp: z.string().min(6),
+  otp: z
+    .string()
+    .min(OTP_LENGTH, { error: "OTP is required" })
+    .max(OTP_LENGTH, { error: "OTP is required" }),
   email: z.email(),
 });
 
+/* TODO Check logic for this form since it could be reused for other types of verifications */
 export function OtpForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -45,23 +50,59 @@ export function OtpForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       otp: otpValue,
+      email: emailValue,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const res = await verifyEmail({
-      query: { token: values.otp, callbackURL: "/sign-up" },
-    });
-    if (res.error) {
-      console.log("Error verifying email", res.error);
+    if (!values.email) {
+      form.setError("root", {
+        message: "Email is required for verification",
+      });
+      return;
+    }
+
+    try {
+      const res = await emailOtp.checkVerificationOtp({
+        email: values.email,
+        otp: values.otp,
+        type: "sign-in",
+      });
+
+      if (res.error) {
+        console.log("Error verifying email", res.error);
+        if (res.error.code === "INVALID_OTP") {
+          form.setError("otp", {
+            message: res.error.message ?? "Invalid OTP",
+          });
+          return;
+        }
+        form.setError("root", {
+          message: res.error.message ?? "Failed to verify email",
+        });
+        return;
+      }
+
+      toast.success("Email verified successfully!");
+      router.push("/sign-up"); // or wherever you want to redirect after verification
+    } catch (error) {
+      console.error("Verification error:", error);
+      form.setError("root", {
+        message: "An unexpected error occurred. Please try again.",
+      });
     }
   }
 
   async function onResend() {
-    toast.success(`Sending verification OTP to ${emailValue}`);
+    if (!emailValue) {
+      form.setError("root", {
+        message: "Email is required to resend verification",
+      });
+      return;
+    }
     const res = await emailOtp.sendVerificationOtp({
       email: emailValue,
-      type: "email-verification",
+      type: "sign-in",
     });
 
     if (res.error) {
@@ -69,7 +110,11 @@ export function OtpForm() {
       form.setError("root", {
         message: res.error.message ?? "Failed to send verification email",
       });
+      return;
     }
+    form.reset();
+
+    toast.success("Verification email sent successfully!");
   }
 
   return (
@@ -117,51 +162,46 @@ export function OtpForm() {
             <FormField
               control={form.control}
               name="otp"
-              render={({ field }) => (
-                <FormItem className="mx-auto w-fit">
-                  <FormLabel>OTP</FormLabel>
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>One-Time Password</FormLabel>
                   <FormControl>
-                    <InputOTP
-                      maxLength={OTP_LENGTH}
-                      {...field}
-                      containerClassName="w-full"
-                    >
-                      <InputOTPGroup className="w-full">
+                    <InputOTP maxLength={OTP_LENGTH} {...field}>
+                      <InputOTPGroup>
                         {Array.from({ length: OTP_LENGTH }).map((_, index) => (
                           <InputOTPSlot key={index} index={index} />
                         ))}
                       </InputOTPGroup>
                     </InputOTP>
                   </FormControl>
+                  {!fieldState.error && (
+                    <FormDescription>
+                      Please enter the one-time password sent to your email.
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
           <div className="space-y-2">
-            <div className="flex flex-col items-center justify-center gap-2">
+            <Button className="w-full" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <span>Verify</span>
+              )}
+            </Button>
+            <p className="text-center text-sm">
+              Didn&apos;t receive the email?{" "}
               <Button
-                type="submit"
-                className="w-full max-w-xs"
-                disabled={form.formState.isSubmitting}
+                variant="link"
+                className="h-fit w-fit p-0"
+                onClick={onResend}
               >
-                {form.formState.isSubmitting ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <span>Verify</span>
-                )}
+                Resend
               </Button>
-              <p className="text-center text-sm">
-                Didn&apos;t receive the email?{" "}
-                <Button
-                  variant="link"
-                  className="h-fit w-fit p-0"
-                  onClick={onResend}
-                >
-                  Resend
-                </Button>
-              </p>
-            </div>
+            </p>
           </div>
         </form>
       </div>
