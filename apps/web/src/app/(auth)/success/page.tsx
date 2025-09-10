@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import {
   Card,
   CardAction,
@@ -7,13 +8,14 @@ import {
   CardFooter,
   CardDescription,
 } from "@repo/ui/components/card";
+import { Button } from "@repo/ui/components/button";
 
 export default async function Success({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string; callbackUrl?: string }>;
 }) {
-  const { message } = await searchParams;
+  const { message, callbackUrl } = await searchParams;
   return (
     <main className="h-dvh w-dvw">
       <Card>
@@ -24,7 +26,11 @@ export default async function Success({
           </CardDescription>
         </CardHeader>
         <CardFooter>
-          <CardAction>Continue</CardAction>
+          <CardAction>
+            <Button asChild>
+              <Link href={callbackUrl ?? "/dashboard"}>Continue</Link>
+            </Button>
+          </CardAction>
         </CardFooter>
       </Card>
     </main>

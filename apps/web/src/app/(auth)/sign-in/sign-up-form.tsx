@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Eye, EyeClosed } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 import { cn } from "@repo/ui/lib/utils";
 import {
@@ -25,6 +25,7 @@ import { Logo } from "@/components/icons";
 import { APP_NAME } from "@/constants";
 import { signUp } from "@/hooks/auth";
 import { MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from "@/server/auth/config";
+import { middlewareMarker } from "@trpc/server/unstable-core-do-not-import";
 
 const formSchema = z
   .object({
@@ -55,6 +56,8 @@ export function SignUpForm({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const emailValue = searchParams.get("sign-up");
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -83,7 +86,27 @@ export function SignUpForm({
       } else {
         form.setError("email", { message: res.error.message });
       }
+      return;
     }
+    setParam("email", values.email);
+    setParam("sign-up", null);
+    const params = new URLSearchParams(searchParams.toString());
+    const query = params.toString();
+    const url = query ? `/verify?${query}` : "/verify";
+    router.replace(url);
+  }
+
+  function setParam(key: string, value: string | null) {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (value === null || value === "") {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    const query = params.toString();
+    const url = query ? `${pathname}?${query}` : pathname;
+    router.replace(url);
   }
 
   return (
