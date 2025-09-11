@@ -122,7 +122,7 @@ export function OtpForm() {
       <div className={cn("relative mx-auto w-full max-w-sm")}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full space-y-6"
+          className="w-full space-y-8"
         >
           <Button
             variant="ghost"
@@ -148,7 +148,7 @@ export function OtpForm() {
               Check your email for the verification token.
             </div>
           </div>
-          <div className="flex flex-col gap-6">
+          <div className="space-y-4">
             {form.formState.errors.root && (
               <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
@@ -157,28 +157,25 @@ export function OtpForm() {
                 </AlertDescription>
               </Alert>
             )}
-          </div>
-          <div className="flex w-full flex-col gap-2">
             <FormField
               control={form.control}
               name="otp"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>One-Time Password</FormLabel>
-                  <FormControl>
-                    <InputOTP maxLength={OTP_LENGTH} {...field}>
-                      <InputOTPGroup>
-                        {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                          <InputOTPSlot key={index} index={index} />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </FormControl>
-                  {!fieldState.error && (
-                    <FormDescription>
-                      Please enter the one-time password sent to your email.
-                    </FormDescription>
-                  )}
+              render={({ field }) => (
+                <FormItem className="flex flex-col items-center justify-center gap-2">
+                  <div className="grid gap-2">
+                    <FormLabel>One-Time Password</FormLabel>
+                    <FormControl>
+                      <InputOTP maxLength={OTP_LENGTH} {...field}>
+                        <InputOTPGroup>
+                          {Array.from({ length: OTP_LENGTH }).map(
+                            (_, index) => (
+                              <InputOTPSlot key={index} index={index} />
+                            ),
+                          )}
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </FormControl>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -197,6 +194,7 @@ export function OtpForm() {
               <Button
                 variant="link"
                 className="h-fit w-fit p-0"
+                type="button"
                 onClick={onResend}
               >
                 Resend

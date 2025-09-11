@@ -71,12 +71,17 @@ export function SignUpForm({
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const params = new URLSearchParams(searchParams.toString());
+    const query = params.toString();
+    const url = query ? `/verify?${query}` : "/verify";
+
     const res = await signUp.email({
       email: values.email,
       name: values.name,
       password: values.password,
-      callbackURL: "/sign-up",
+      callbackURL: url,
     });
+
     if (res.error) {
       console.log("Error signing up", res.error);
       if (res.error.code === "FAILED_TO_CREATE_USER") {
@@ -88,12 +93,6 @@ export function SignUpForm({
       }
       return;
     }
-    setParam("email", values.email);
-    setParam("sign-up", null);
-    const params = new URLSearchParams(searchParams.toString());
-    const query = params.toString();
-    const url = query ? `/verify?${query}` : "/verify";
-    router.replace(url);
   }
 
   function setParam(key: string, value: string | null) {
