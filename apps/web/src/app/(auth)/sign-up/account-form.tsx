@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User2, Info, Edit, CloudUpload, Trash2 } from "lucide-react";
+import type { User } from "better-auth";
 
 import {
   Form,
@@ -31,6 +32,14 @@ import {
   EditableToolbar,
 } from "@repo/ui/components/editable";
 import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogContent,
+  DialogFooter,
+} from "@repo/ui/components/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -46,7 +55,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/ui/components/tooltip";
-import type { User } from "better-auth";
 
 const formSchema = z.object({
   image: z.string().nullable(),
@@ -208,5 +216,55 @@ export function AccountForm({
         </form>
       </Form>
     </div>
+  );
+}
+
+const fileSchema = z.object({
+  file: z
+    .array(z.custom<File>())
+    .min(1, "At least one file is required")
+    .max(1, "Only one file is allowed"),
+});
+
+function ImageUpload({
+  user,
+  onOpenChange,
+  open,
+}: {
+  user: User;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const form = useForm<z.infer<typeof fileSchema>>({
+    resolver: zodResolver(fileSchema),
+    defaultValues: {
+      file: [],
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof fileSchema>) {
+    console.log(values);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Upload Image</DialogTitle>
+          <DialogDescription>Upload an image to your account</DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <p>Upload content</p>
+            <DialogFooter>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+              <Button type="button">Upload</Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
