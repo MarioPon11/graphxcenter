@@ -17,7 +17,7 @@ import { env } from "@/env/server";
 import { db, schema } from "@/server/db";
 import { APP_NAME } from "@/constants";
 import { getRedis } from "@/server/cache";
-import { hashBuffer, generateId } from "@/lib/id";
+import { hashBuffer, generateId, generateOTP } from "@/lib/id";
 import {
   SHORT_LIVED_TOKEN,
   LONG_LIVED_TOKEN,
@@ -133,15 +133,6 @@ export const auth = betterAuth({
   },
   emailVerification: {
     autoSignInAfterVerification: true,
-    sendOnSignIn: true,
-    sendOnSignUp: true,
-    expiresIn: SHORT_LIVED_TOKEN,
-    onEmailVerification: async (data) => {
-      console.log("On email verification", data);
-    },
-    afterEmailVerification: async (data) => {
-      console.log("After email verification", data);
-    },
   },
   verification: {
     disableCleanup: env.NODE_ENV !== "production",
@@ -209,7 +200,11 @@ export const auth = betterAuth({
       expiresIn: SHORT_LIVED_TOKEN,
       otpLength: OTP_LENGTH,
       storeOTP: env.NODE_ENV === "production" ? "hashed" : "plain",
-      sendVerificationOnSignUp: true,
+      sendVerificationOnSignUp: false,
+      generateOTP: () => {
+        console.log("Generating OTP");
+        return generateOTP(OTP_LENGTH);
+      },
       sendVerificationOTP: async ({ email, otp, type }) => {
         console.log("Sending verification OTP from plugin", email, otp, type);
       },
