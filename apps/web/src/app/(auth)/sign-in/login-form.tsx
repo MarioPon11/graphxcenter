@@ -51,6 +51,7 @@ export function LoginForm({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const callbackURL = searchParams.get("callbackURL") ?? "/dashboard";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,6 +76,7 @@ export function LoginForm({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const res = await signIn.magicLink({
       email: values.email,
+      callbackURL,
     });
     if (res.error) {
       console.log("Error logging in", res.error);
