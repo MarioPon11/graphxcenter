@@ -26,7 +26,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@repo/ui/components/alert";
 import { cn } from "@repo/ui/lib/utils";
 
-import { emailOtp } from "@/hooks/auth";
+import { twoFactor } from "@/hooks/auth";
 import { OTP_LENGTH } from "@/server/auth/config";
 import { Logo } from "@/components/icons";
 import { APP_NAME } from "@/constants";
@@ -39,17 +39,16 @@ const formSchema = z.object({
   email: z.email(),
 });
 
-export function OtpForm() {
+export function TwoFactorForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const otpValue = searchParams.get("otp") ?? "";
   const emailValue = searchParams.get("sign-up") ?? "";
-  const verificationType: "sign-in" | "forget-password" | "email-verification" =
+  const verificationType: "two-factor-otp" | "two-factor-totp" =
     (searchParams.get("verification") as
-      | "sign-in"
-      | "forget-password"
-      | "email-verification"
-      | null) ?? "sign-in";
+      | "two-factor-otp"
+      | "two-factor-totp"
+      | null) ?? "two-factor-otp";
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -67,28 +66,20 @@ export function OtpForm() {
     }
 
     try {
-      const res = await emailOtp.checkVerificationOtp({
-        email: values.email,
-        otp: values.otp,
-        type: verificationType,
+      const res = await twoFactor.verifyOtp({
+        code: values.otp,
       });
 
       if (res.error) {
-        console.log("Error verifying email", res.error);
-        if (res.error.code === "INVALID_OTP") {
-          form.setError("otp", {
-            message: res.error.message ?? "Invalid OTP",
-          });
-          return;
-        }
-        form.setError("root", {
-          message: res.error.message ?? "Failed to verify email",
+        console.log("Error verifying OTP", res.error);
+        form.setError("otp", {
+          message: res.error.message ?? "Invalid OTP",
         });
         return;
       }
 
-      toast.success("Email verified successfully!");
-      router.push("/sign-up"); // or wherever you want to redirect after verification
+      toast.success("OTP verified successfully!");
+      router.push("/dashboard");
     } catch (error) {
       console.error("Verification error:", error);
       form.setError("root", {
@@ -98,26 +89,17 @@ export function OtpForm() {
   }
 
   async function onResend() {
-    if (!emailValue) {
-      form.setError("root", {
-        message: "Email is required to resend verification",
-      });
-      return;
-    }
-    const res = await emailOtp.sendVerificationOtp({
-      email: emailValue,
-      type: "sign-in",
-    });
+    const res = await twoFactor.sendOtp();
 
     if (res.error) {
-      console.log("Error sending verification email", res.error);
+      console.log("Error sending OTP", res.error);
       form.setError("root", {
-        message: res.error.message ?? "Failed to send verification email",
+        message: res.error.message ?? "Failed to send OTP",
       });
       return;
     }
-    form.reset();
 
+    form.reset();
     toast.success("Verification email sent successfully!");
   }
 
@@ -149,7 +131,11 @@ export function OtpForm() {
             </Link>
             <h1 className="text-xl font-bold">Verify your email</h1>
             <div className="text-center text-base">
-              Check your email for the verification token.
+              {verificationType === "two-factor-otp" ? (
+                <p>Check your email for the verification token.</p>
+              ) : (
+                <p>Check your authenticator app for the verification token.</p>
+              )}
             </div>
           </div>
           <div className="space-y-4">
@@ -193,17 +179,19 @@ export function OtpForm() {
                 <span>Verify</span>
               )}
             </Button>
-            <p className="text-center text-sm">
-              Didn&apos;t receive the email?{" "}
-              <Button
-                variant="link"
-                className="h-fit w-fit p-0"
-                type="button"
-                onClick={onResend}
-              >
-                Resend
-              </Button>
-            </p>
+            {verificationType === "two-factor-otp" && (
+              <p className="text-center text-sm">
+                Didn&apos;t receive the email?{" "}
+                <Button
+                  variant="link"
+                  className="h-fit w-fit p-0"
+                  type="button"
+                  onClick={onResend}
+                >
+                  Resend
+                </Button>
+              </p>
+            )}
           </div>
         </form>
       </div>
