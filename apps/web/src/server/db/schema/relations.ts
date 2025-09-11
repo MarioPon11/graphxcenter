@@ -93,8 +93,11 @@ export const eventRecurrenceRelations = relations(
     event: one(events, {
       fields: [eventRecurrence.eventId],
       references: [events.id],
+      relationName: "event",
     }),
-    occurrences: many(eventOccurrences),
+    occurrences: many(eventOccurrences, {
+      relationName: "occurrences",
+    }),
   }),
 );
 
@@ -104,14 +107,17 @@ export const eventOccurrencesRelations = relations(
     event: one(events, {
       fields: [eventOccurrences.eventId],
       references: [events.id],
+      relationName: "event",
     }),
     modifiedBy: one(users, {
       fields: [eventOccurrences.createdBy],
       references: [users.id],
+      relationName: "modifiedBy",
     }),
     updatedBy: one(users, {
       fields: [eventOccurrences.updatedBy],
       references: [users.id],
+      relationName: "updatedBy",
     }),
   }),
 );
