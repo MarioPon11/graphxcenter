@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Eye, EyeClosed } from "lucide-react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 import { cn } from "@repo/ui/lib/utils";
 import {
@@ -25,7 +25,7 @@ import { Logo } from "@/components/icons";
 import { APP_NAME } from "@/constants";
 import { signUp } from "@/hooks/auth";
 import { MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from "@/server/auth/config";
-import { middlewareMarker } from "@trpc/server/unstable-core-do-not-import";
+import { toast } from "sonner";
 
 const formSchema = z
   .object({
@@ -57,29 +57,34 @@ export function SignUpForm({
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  const pathname = usePathname();
-  const emailValue = searchParams.get("sign-up");
+  const EMAIL_STORAGE_KEY = "auth_email";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: emailValue ?? "",
+      email: "",
       name: "",
       password: "",
       confirmPassword: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const params = new URLSearchParams(searchParams.toString());
-    const query = params.toString();
-    const url = query ? `/verify?${query}` : "/verify";
+  useEffect(() => {
+    try {
+      const savedEmail = sessionStorage.getItem(EMAIL_STORAGE_KEY);
+      if (savedEmail) {
+        form.setValue("email", savedEmail);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    toast("Signin up with email");
     const res = await signUp.email({
       email: values.email,
       name: values.name,
       password: values.password,
-      callbackURL: url,
     });
 
     if (res.error) {
@@ -93,19 +98,14 @@ export function SignUpForm({
       }
       return;
     }
-  }
 
-  function setParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
-
-    if (value === null || value === "") {
-      params.delete(key);
-    } else {
-      params.set(key, value);
-    }
     const query = params.toString();
-    const url = query ? `${pathname}?${query}` : pathname;
-    router.replace(url);
+    const url = query
+      ? `/verify?verification=email-verification&${query}`
+      : "/verify?verification=email-verification";
+
+    router.push(url);
   }
 
   return (

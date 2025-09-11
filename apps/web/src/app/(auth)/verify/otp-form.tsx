@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,7 +43,7 @@ export function OtpForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const otpValue = searchParams.get("otp") ?? "";
-  const emailValue = searchParams.get("sign-up") ?? "";
+  const EMAIL_STORAGE_KEY = "auth_email";
   const verificationType: "sign-in" | "forget-password" | "email-verification" =
     (searchParams.get("verification") as
       | "sign-in"
@@ -54,9 +54,19 @@ export function OtpForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       otp: otpValue,
-      email: emailValue,
+      email: "",
     },
   });
+
+  useEffect(() => {
+    try {
+      const savedEmail = sessionStorage.getItem(EMAIL_STORAGE_KEY);
+      if (savedEmail) {
+        form.setValue("email", savedEmail);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!values.email) {
@@ -88,7 +98,7 @@ export function OtpForm() {
       }
 
       toast.success("Email verified successfully!");
-      router.push("/sign-up"); // or wherever you want to redirect after verification
+      router.push("/sign-up");
     } catch (error) {
       console.error("Verification error:", error);
       form.setError("root", {
@@ -98,15 +108,16 @@ export function OtpForm() {
   }
 
   async function onResend() {
-    if (!emailValue) {
+    const email = form.getValues("email");
+    if (!email) {
       form.setError("root", {
         message: "Email is required to resend verification",
       });
       return;
     }
     const res = await emailOtp.sendVerificationOtp({
-      email: emailValue,
-      type: "sign-in",
+      email,
+      type: verificationType,
     });
 
     if (res.error) {

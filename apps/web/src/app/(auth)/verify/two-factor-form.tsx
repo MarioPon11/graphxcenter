@@ -36,14 +36,13 @@ const formSchema = z.object({
     .string()
     .min(OTP_LENGTH, { error: "OTP is required" })
     .max(OTP_LENGTH, { error: "OTP is required" }),
-  email: z.email(),
 });
 
 export function TwoFactorForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const otpValue = searchParams.get("otp") ?? "";
-  const emailValue = searchParams.get("sign-up") ?? "";
+
   const verificationType: "two-factor-otp" | "two-factor-totp" =
     (searchParams.get("verification") as
       | "two-factor-otp"
@@ -53,18 +52,10 @@ export function TwoFactorForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       otp: otpValue,
-      email: emailValue,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!values.email) {
-      form.setError("root", {
-        message: "Email is required for verification",
-      });
-      return;
-    }
-
     try {
       const res = await twoFactor.verifyOtp({
         code: values.otp,

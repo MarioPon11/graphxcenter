@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -46,16 +46,26 @@ export function PasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const emailValue = searchParams.get("sign-in");
+  const EMAIL_STORAGE_KEY = "auth_email";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: emailValue ?? "",
+      email: "",
       password: "",
       rememberMe: false,
     },
   });
+
+  useEffect(() => {
+    try {
+      const savedEmail = sessionStorage.getItem(EMAIL_STORAGE_KEY);
+      if (savedEmail) {
+        form.setValue("email", savedEmail);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const res = await signIn.email({
@@ -193,7 +203,7 @@ export function PasswordForm() {
                 <Button
                   type="button"
                   variant="link"
-                  onClick={() => setParam("sign-in", null)}
+                  onClick={() => setParam("step", null)}
                   className="w-full"
                 >
                   Back to login

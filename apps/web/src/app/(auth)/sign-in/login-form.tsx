@@ -46,6 +46,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const [googleSignIn, setGoogleSignIn] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const EMAIL_STORAGE_KEY = "auth_email";
 
   const router = useRouter();
   const pathname = usePathname();
@@ -78,7 +79,10 @@ export function LoginForm({
     if (res.error) {
       console.log("Error logging in", res.error);
       if (res.error.code === "USER_NOT_FOUND") {
-        setParam("sign-up", values.email);
+        try {
+          sessionStorage.setItem(EMAIL_STORAGE_KEY, values.email);
+        } catch {}
+        setParam("step", "sign-up");
       }
       form.setError("email", { message: res.error.message });
       return;
@@ -107,7 +111,11 @@ export function LoginForm({
   }
 
   function handleContinueWithPassword() {
-    setParam("sign-in", form.getValues("email"));
+    try {
+      const email = form.getValues("email");
+      if (email) sessionStorage.setItem(EMAIL_STORAGE_KEY, email);
+    } catch {}
+    setParam("step", "sign-in");
   }
 
   return (
