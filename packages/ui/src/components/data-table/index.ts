@@ -8,3 +8,7 @@ export * from "./data-table-slider-filter.js";
 export * from "./data-table-sort-list.js";
 export * from "./data-table-toolbar.js";
 export * from "./data-table-view-options.js";
+export * from "./data-table-action-bar.js";
+export * from "./data-table-filter-list.js";
+export * from "./data-table-filter-menu.js";
+export * from "./data-table-range-filter.js";
