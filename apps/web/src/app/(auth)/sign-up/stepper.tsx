@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import type { User } from "better-auth";
+
 import {
   Stepper,
   StepperIndicator,
@@ -10,8 +12,8 @@ import {
   StepperTrigger,
 } from "@repo/ui/components/stepper";
 import { cn } from "@repo/ui/lib/utils";
-import { AccountForm } from "./account-form";
-import type { User } from "better-auth";
+import { ProfileForm } from "./profile-form";
+import { AccountsForm } from "./accounts-form";
 
 type SignUpFormProps = React.ComponentProps<"div"> & {
   steps: number[];
@@ -70,8 +72,9 @@ export function SignUpForm({
           ))}
         </Stepper>
         {currentStep === 1 && (
-          <AccountForm handleNext={handleNext} user={user} />
+          <ProfileForm handleNext={handleNext} user={user} />
         )}
+        {currentStep === 2 && <AccountsForm />}
       </div>
     </div>
   );

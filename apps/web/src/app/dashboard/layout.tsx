@@ -10,6 +10,7 @@ import { auth } from "@/server/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Breadcrumbs } from "@/components/sidebar/breadcrumbs";
+import { adminRoles } from "@/server/auth/access/admin";
 
 export default async function AdminLayout({
   children,
@@ -19,6 +20,9 @@ export default async function AdminLayout({
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+  const accounts = await auth.api.listUserAccounts({
+    headers: await headers(),
+  });
 
   if (!session) {
     redirect("/sign-in");
@@ -26,6 +30,17 @@ export default async function AdminLayout({
 
   if (!session.user.username) {
     redirect("/sign-up");
+  }
+
+  if (accounts.length <= 1) {
+    redirect("/sign-up?step=2");
+  }
+
+  if (
+    adminRoles.includes(session.user.role ?? "") &&
+    !session.user.twoFactorEnabled
+  ) {
+    redirect("/sign-up?step=4");
   }
 
   return (

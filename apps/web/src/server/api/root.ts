@@ -1,4 +1,4 @@
-import { roomsRouter, adminRouter } from "@/server/api/routers";
+import { roomsRouter, adminRouter, authRouter } from "@/server/api/routers";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
 /**
@@ -9,6 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 export const appRouter = createTRPCRouter({
   rooms: roomsRouter,
   admin: adminRouter,
+  auth: authRouter,
 });
 
 // export type definition of API

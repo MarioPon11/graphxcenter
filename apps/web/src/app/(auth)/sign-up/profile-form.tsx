@@ -67,7 +67,7 @@ const formSchema = z.object({
     ),
 });
 
-export function AccountForm({
+export function ProfileForm({
   handleNext,
   user,
 }: {
