@@ -1,5 +1,5 @@
 import React from "react";
-import { AppSidebar } from "@/components/sidebar/admin-sidebar";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Separator } from "@repo/ui/components/separator";
 import {
   SidebarInset,

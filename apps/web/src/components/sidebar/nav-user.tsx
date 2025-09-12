@@ -1,13 +1,16 @@
 "use client";
 
+import React from "react";
 import {
+  ArrowUpDown,
   BadgeCheck,
   Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
-  Sparkles,
+  UserPlus2,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import {
   Avatar,
@@ -22,6 +25,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@repo/ui/components/dropdown-menu";
 import {
   SidebarMenu,
@@ -29,19 +35,23 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@repo/ui/components/sidebar";
-import { signOut } from "@/hooks/auth";
+import { signOut, listSessions } from "@/hooks/auth";
+import { api } from "@/trpc/react";
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}) {
+export function NavUser() {
   const { isMobile } = useSidebar();
-
+  const { data: sessions } = useQuery({
+    queryKey: ["sessions"],
+    queryFn: async () => {
+      const sessions = await listSessions();
+      if (sessions.error) {
+        console.error(sessions.error);
+        throw new Error(sessions.error.message);
+      }
+      return sessions.data;
+    },
+  });
+  const { data } = api.auth.session.get.useQuery();
   async function handleSignOut() {
     await signOut();
   }
@@ -56,12 +66,15 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage
+                  src={data?.user.image ?? ""}
+                  alt={data?.user.name}
+                />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">{data?.user.name}</span>
+                <span className="truncate text-xs">{data?.user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -70,26 +83,49 @@ export function NavUser({
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
-            sideOffset={4}
+            sideOffset={8}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage
+                    src={data?.user.image ?? ""}
+                    alt={data?.user.name}
+                  />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">
+                    {data?.user.name}
+                  </span>
+                  <span className="truncate text-xs">{data?.user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <DropdownMenuItem>
+                    <ArrowUpDown />
+                    Switch Account
+                  </DropdownMenuItem>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {sessions?.map((session) => (
+                    <DropdownMenuItem key={session.id}>
+                      <span className="truncate font-medium">
+                        {session.userId}
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <UserPlus2 />
+                    Add Account
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
