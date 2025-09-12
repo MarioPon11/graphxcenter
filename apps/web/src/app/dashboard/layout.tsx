@@ -20,9 +20,6 @@ export default async function AdminLayout({
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  const accounts = await auth.api.listUserAccounts({
-    headers: await headers(),
-  });
 
   if (!session) {
     redirect("/sign-in");
@@ -31,6 +28,10 @@ export default async function AdminLayout({
   if (!session.user.username) {
     redirect("/sign-up");
   }
+
+  const accounts = await auth.api.listUserAccounts({
+    headers: await headers(),
+  });
 
   if (accounts.length <= 1) {
     redirect("/sign-up?step=2");
