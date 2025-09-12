@@ -41,7 +41,7 @@ export default async function AdminLayout({
     adminRoles.includes(session.user.role ?? "") &&
     !session.user.twoFactorEnabled
   ) {
-    redirect("/sign-up?step=4");
+    redirect("/sign-up?step=3");
   }
 
   return (

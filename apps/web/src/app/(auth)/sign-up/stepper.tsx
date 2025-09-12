@@ -14,6 +14,8 @@ import {
 import { cn } from "@repo/ui/lib/utils";
 import { ProfileForm } from "./profile-form";
 import { AccountsForm } from "./accounts-form";
+import { TwoFactorForm } from "./two-factor-form";
+import { Success } from "./success";
 
 type SignUpFormProps = React.ComponentProps<"div"> & {
   steps: number[];
@@ -75,6 +77,9 @@ export function SignUpForm({
           <ProfileForm handleNext={handleNext} user={user} />
         )}
         {currentStep === 2 && <AccountsForm />}
+        {currentStep === 3 && steps.includes(4) && <TwoFactorForm />}
+        {currentStep === 3 && !steps.includes(4) && <Success />}
+        {currentStep === 4 && <Success />}
       </div>
     </div>
   );
