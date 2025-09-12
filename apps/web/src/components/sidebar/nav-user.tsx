@@ -11,6 +11,7 @@ import {
   UserPlus2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 import {
   Avatar,
@@ -35,15 +36,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@repo/ui/components/sidebar";
-import { signOut, listSessions } from "@/hooks/auth";
+import { signOut, multiSession } from "@/hooks/auth";
 import { api } from "@/trpc/react";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
+  const router = useRouter();
+
   const { data: sessions } = useQuery({
     queryKey: ["sessions"],
     queryFn: async () => {
-      const sessions = await listSessions();
+      const sessions = await multiSession.listDeviceSessions();
       if (sessions.error) {
         console.error(sessions.error);
         throw new Error(sessions.error.message);
@@ -109,16 +112,44 @@ export function NavUser() {
                   <ArrowUpDown />
                   Switch Account
                 </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  {sessions?.map((session) => (
-                    <DropdownMenuItem key={session.id}>
-                      <span className="truncate font-medium">
-                        {session.userId}
-                      </span>
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                <DropdownMenuSubContent sideOffset={4}>
+                  {sessions?.map((session, index) => {
+                    if (session.session.id === data?.session.id) {
+                      return null;
+                    }
+                    return (
+                      <React.Fragment key={index}>
+                        <DropdownMenuItem
+                          onSelect={async () => {
+                            await multiSession.setActive({
+                              sessionToken: session.session.token,
+                            });
+                          }}
+                        >
+                          <Avatar className="h-8 w-8 rounded-lg">
+                            <AvatarImage
+                              src={session.user.image ?? ""}
+                              alt={session.user.name}
+                            />
+                            <AvatarFallback className="rounded-lg">
+                              {session.user.name?.charAt(0)}
+                              {session.user.name?.charAt(1)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="grid flex-1 text-left text-sm leading-tight">
+                            <span className="truncate font-medium">
+                              {session.user.name}
+                            </span>
+                            <span className="truncate text-xs">
+                              {session.user.email}
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </React.Fragment>
+                    );
+                  })}
+                  <DropdownMenuItem onSelect={() => router.push("/sign-in")}>
                     <UserPlus2 />
                     Add Account
                   </DropdownMenuItem>
