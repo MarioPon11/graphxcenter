@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User2, Info, Edit, CloudUpload, Trash2 } from "lucide-react";
+import { User2, Info, Edit, CloudUpload, Trash2, Loader2 } from "lucide-react";
 import type { User } from "better-auth";
+import { toast } from "sonner";
 
 import {
   Form,
@@ -32,19 +33,12 @@ import {
   EditableToolbar,
 } from "@repo/ui/components/editable";
 import {
-  Dialog,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogContent,
-  DialogFooter,
-} from "@repo/ui/components/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@repo/ui/components/dropdown-menu";
 import { Input } from "@repo/ui/components/input";
 import { Button } from "@repo/ui/components/button";
@@ -55,11 +49,22 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/ui/components/tooltip";
+import { UploadModal } from "@/components/upload/modal";
+import { updateUser } from "@/hooks/auth";
+import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from "@/server/auth/config";
 
 const formSchema = z.object({
-  image: z.string().nullable(),
-  name: z.string().min(1),
-  username: z.string().min(1),
+  name: z.string().min(1, "Name is required"),
+  username: z
+    .string()
+    .min(
+      MIN_USERNAME_LENGTH,
+      `Username must be at least ${MIN_USERNAME_LENGTH} characters long`,
+    )
+    .max(
+      MAX_USERNAME_LENGTH,
+      `Username must be at most ${MAX_USERNAME_LENGTH} characters long`,
+    ),
 });
 
 export function AccountForm({
@@ -69,18 +74,51 @@ export function AccountForm({
   handleNext: () => void;
   user: User;
 }) {
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: user.name,
-      image: user.image,
       username: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const response = await updateUser({ ...values });
+    if (response.error) {
+      console.error("Error updating user", response.error);
+      form.setError("root", {
+        message: response.error.message ?? "Failed to update user",
+      });
+      return;
+    }
     handleNext();
+  }
+
+  async function onUploadSuccess(urls: string[]) {
+    const response = await updateUser({
+      image: urls[0]!,
+    });
+
+    if (response.error) {
+      console.error("Error updating user", response.error);
+      toast.error(response.error.message ?? "Failed to update profile image");
+      return;
+    }
+
+    toast.success("Profile image updated");
+  }
+
+  async function onRemoveImage() {
+    const response = await updateUser({
+      image: null,
+    });
+
+    if (response.error) {
+      console.error("Error updating user", response.error);
+    }
+
+    toast.success("Profile image removed");
   }
 
   return (
@@ -102,13 +140,22 @@ export function AccountForm({
                 <Edit />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent align="end">
               <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <CloudUpload />
-                  <span>Upload Image</span>
+                <DropdownMenuItem disabled={!user.image}>
+                  <User2 />
+                  <span>View Profile Image</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem disabled={!form.getValues("image")}>
+                <DropdownMenuItem onSelect={() => setUploadModalOpen(true)}>
+                  <CloudUpload />
+                  <span>Upload New</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  disabled={!user.image}
+                  variant="destructive"
+                  onSelect={onRemoveImage}
+                >
                   <Trash2 />
                   <span>Remove Image</span>
                 </DropdownMenuItem>
@@ -116,6 +163,14 @@ export function AccountForm({
             </DropdownMenuContent>
           </DropdownMenu>
         </Avatar>
+        <UploadModal
+          open={uploadModalOpen}
+          onOpenChange={setUploadModalOpen}
+          onSuccess={onUploadSuccess}
+          maxFiles={1}
+          maxSize={2 * 1024 * 1024}
+          type="profile"
+        />
       </div>
       <Form {...form}>
         <form
@@ -143,21 +198,13 @@ export function AccountForm({
                   >
                     <div className="flex items-start gap-2">
                       <FormLabel asChild>
-                        <EditableLabel>Name</EditableLabel>
+                        <EditableLabel>
+                          Name{" "}
+                          <span className="text-muted-foreground text-xs">
+                            (click to edit)
+                          </span>
+                        </EditableLabel>
                       </FormLabel>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="size-3" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              Your name will be hidden from other users. This is
-                              internal only.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
                     </div>
                     <div className="flex items-start gap-4">
                       <EditableArea className="flex-1 text-start font-bold">
@@ -187,7 +234,7 @@ export function AccountForm({
             control={form.control}
             name="username"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="text-start">
                 <div className="flex items-start gap-2">
                   <FormLabel>Username</FormLabel>
                   <TooltipProvider>
@@ -209,62 +256,20 @@ export function AccountForm({
             )}
           />
           <div className="mt-8 flex justify-end">
-            <Button type="submit" className="w-full max-w-[150px]">
-              Next
+            <Button
+              type="submit"
+              className="w-full max-w-[150px]"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <span>Next</span>
+              )}
             </Button>
           </div>
         </form>
       </Form>
     </div>
-  );
-}
-
-const fileSchema = z.object({
-  file: z
-    .array(z.custom<File>())
-    .min(1, "At least one file is required")
-    .max(1, "Only one file is allowed"),
-});
-
-function ImageUpload({
-  user,
-  onOpenChange,
-  open,
-}: {
-  user: User;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}) {
-  const form = useForm<z.infer<typeof fileSchema>>({
-    resolver: zodResolver(fileSchema),
-    defaultValues: {
-      file: [],
-    },
-  });
-
-  function onSubmit(values: z.infer<typeof fileSchema>) {
-    console.log(values);
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Upload Image</DialogTitle>
-          <DialogDescription>Upload an image to your account</DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <p>Upload content</p>
-            <DialogFooter>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
-              <Button type="button">Upload</Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
   );
 }

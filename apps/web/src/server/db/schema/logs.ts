@@ -6,7 +6,7 @@ import {
   jsonb,
   varchar,
 } from "drizzle-orm/pg-core";
-import type { users } from "./auth";
+import type { UserWithRole } from "better-auth/plugins/admin";
 import type { rooms } from "./rooms";
 import type { events } from "./events";
 
@@ -17,7 +17,7 @@ type Prettify<T> = {
 } & {};
 
 export type LogData =
-  | Prettify<{ logType: "user" } & typeof users.$inferSelect>
+  | Prettify<{ logType: "user" } & UserWithRole>
   | Prettify<{ logType: "room" } & typeof rooms.$inferSelect>
   | Prettify<{ logType: "event" } & typeof events.$inferSelect>
   | Prettify<{ logType: string } & Record<string, unknown>>;
