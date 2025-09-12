@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { QRCodeCanvas } from "qrcode.react";
 import { z } from "zod";
 
 import {
@@ -13,6 +14,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@repo/ui/components/form";
+import { Alert, AlertDescription, AlertTitle } from "@repo/ui/components/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@repo/ui/components/dialog";
 import { Button } from "@repo/ui/components/button";
 import { PasswordInput } from "@repo/ui/components/input-password";
 
@@ -85,6 +95,28 @@ export function TwoFactorForm() {
           </Button>
         </form>
       </Form>
+      <Dialog open={!!totpUri}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Scan QR Code</DialogTitle>
+          </DialogHeader>
+          <div>
+            <QRCodeCanvas
+              value={totpUri ?? ""}
+              size={256}
+              level="M"
+              marginSize={2}
+              bgColor="#ffffff"
+              fgColor="#111827"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="secondary">
+              Back
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
