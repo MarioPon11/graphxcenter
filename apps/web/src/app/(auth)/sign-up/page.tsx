@@ -15,14 +15,13 @@ export default async function SignUp({
     headers: await headers(),
   });
 
-  const accounts = await auth.api.listUserAccounts({
-    headers: await headers(),
-  });
-
   if (!session) {
     redirect("/sign-in");
   }
 
+  const accounts = await auth.api.listUserAccounts({
+    headers: await headers(),
+  });
   /**
    *  Redirection logic for each step in case of success or failed validation
    *  if a value is null, the step will be rendered
