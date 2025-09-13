@@ -49,6 +49,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/ui/components/tooltip";
+import { useQueryState } from "@repo/ui/components/nuqs";
 import { UploadModal } from "@/components/upload/modal";
 import { updateUser } from "@/hooks/auth";
 import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from "@/server/auth/config";
@@ -67,13 +68,8 @@ const formSchema = z.object({
     ),
 });
 
-export function ProfileForm({
-  handleNext,
-  user,
-}: {
-  handleNext: () => void;
-  user: User;
-}) {
+export function ProfileForm({ user }: { user: User }) {
+  const [step, setStep] = useQueryState("step");
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,7 +88,8 @@ export function ProfileForm({
       });
       return;
     }
-    handleNext();
+
+    setStep((Number(step) + 1).toString());
   }
 
   async function onUploadSuccess(urls: string[]) {

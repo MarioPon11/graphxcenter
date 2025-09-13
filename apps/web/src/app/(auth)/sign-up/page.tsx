@@ -33,7 +33,7 @@ export default async function SignUp({
     emailVerified: { true: string | null; false: string | null };
     twoFactor: { true: string | null; false: string | null };
   } = {
-    username: { true: null, false: null },
+    username: { true: null, false: "/sign-up?step=1" },
     accounts: {
       true: null,
       false: "/sign-up?step=2",

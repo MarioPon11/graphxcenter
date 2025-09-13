@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import type { User } from "better-auth";
 
 import {
@@ -12,6 +11,8 @@ import {
   StepperTrigger,
 } from "@repo/ui/components/stepper";
 import { cn } from "@repo/ui/lib/utils";
+import { useQueryState } from "@repo/ui/components/nuqs";
+
 import { ProfileForm } from "./profile-form";
 import { AccountsForm } from "./accounts-form";
 import { TwoFactorForm } from "./two-factor-form";
@@ -28,41 +29,19 @@ export function SignUpForm({
   className,
   ...props
 }: SignUpFormProps) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const step = Number(searchParams.get("step") ?? "1") ?? 1;
-  const [currentStep, setCurrentStep] = useState(1);
-
-  useEffect(() => {
-    setCurrentStep(step);
-  }, [step]);
-
-  function setParam(key: string, value: string | null) {
-    const params = new URLSearchParams(searchParams.toString());
-    setCurrentStep(Number(value ?? "1"));
-
-    if (value === null || value === "") {
-      params.delete(key);
-    } else {
-      params.set(key, value);
-    }
-
-    const query = params.toString();
-    const url = query ? `${pathname}?${query}` : pathname;
-    router.replace(url);
-  }
+  const [step, setStep] = useQueryState("step");
 
   function handleNext() {
-    setParam("step", (currentStep + 1).toString());
+    const nextStep = Number(step) + 1;
+    setStep(nextStep.toString());
   }
 
   return (
     <div className={cn("w-full max-w-xl", className)} {...props}>
       <div className="mx-auto space-y-8 text-center">
         <Stepper
-          value={currentStep}
-          onValueChange={(value) => setParam("step", value.toString())}
+          value={Number(step)}
+          onValueChange={(value) => setStep(value.toString())}
         >
           {steps.map((step) => (
             <StepperItem key={step} step={step} className="not-last:flex-1">
@@ -73,13 +52,11 @@ export function SignUpForm({
             </StepperItem>
           ))}
         </Stepper>
-        {currentStep === 1 && (
-          <ProfileForm handleNext={handleNext} user={user} />
-        )}
-        {currentStep === 2 && <AccountsForm />}
-        {currentStep === 3 && steps.includes(4) && <TwoFactorForm />}
-        {currentStep === 3 && !steps.includes(4) && <Success />}
-        {currentStep === 4 && <Success />}
+        {Number(step) === 1 && <ProfileForm user={user} />}
+        {Number(step) === 2 && <AccountsForm />}
+        {Number(step) === 3 && steps.includes(4) && <TwoFactorForm />}
+        {Number(step) === 3 && !steps.includes(4) && <Success />}
+        {Number(step) === 4 && <Success />}
       </div>
     </div>
   );
