@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import type { User } from "better-auth";
 
 import {
@@ -30,11 +30,6 @@ export function SignUpForm({
   ...props
 }: SignUpFormProps) {
   const [step, setStep] = useQueryState("step");
-
-  function handleNext() {
-    const nextStep = Number(step) + 1;
-    setStep(nextStep.toString());
-  }
 
   return (
     <div className={cn("w-full max-w-xl", className)} {...props}>
