@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { usePathname } from "next/navigation";
 
 import {
   SidebarGroup,
@@ -21,6 +22,8 @@ export function NavMain({
     primary?: boolean;
   }[];
 }) {
+  const pathname = usePathname();
+
   return (
     <SidebarGroup className="">
       <SidebarGroupLabel>Calendar</SidebarGroupLabel>
@@ -32,6 +35,8 @@ export function NavMain({
               className={cn(
                 item.primary &&
                   "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80",
+                pathname === item.url &&
+                  "bg-primary/25 text-primary-foreground",
               )}
             >
               <a href={item.url}>

@@ -35,22 +35,21 @@ type NavMainItem = {
   primary?: boolean;
 };
 
+const data: { navAdmin: NavAdminItem[]; navMain: NavMainItem[] } = {
+  navAdmin: [],
+  navMain: [
+    { name: "Reservations", url: "#", icon: "ticket-check" },
+    { name: "Rooms", url: "/dashboard/rooms", icon: "blocks" },
+    { name: "My Calendar", url: "#", icon: "contact" },
+  ],
+};
+
 export async function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-
-  const data: { navAdmin: NavAdminItem[]; navMain: NavMainItem[] } = {
-    navAdmin: [],
-    navMain: [
-      { name: "New", url: "#", icon: "plus", primary: true },
-      { name: "Reservations", url: "#", icon: "ticket-check" },
-      { name: "Rooms", url: "#", icon: "blocks" },
-      { name: "My Calendar", url: "#", icon: "contact" },
-    ],
-  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
