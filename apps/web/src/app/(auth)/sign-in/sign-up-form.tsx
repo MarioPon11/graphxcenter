@@ -125,7 +125,7 @@ export function SignUpForm({
               </Link>
               <h1 className="text-xl font-bold">Welcome to {APP_NAME}</h1>
               <div className="text-center text-sm">
-                Use your graphxsource email to sign in.
+                Enter your information to create an account.
               </div>
             </div>
             <div className="flex flex-col gap-6">
