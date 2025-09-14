@@ -9,7 +9,7 @@ import {
 import { auth } from "@/server/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Breadcrumbs } from "@/components/sidebar/breadcrumbs";
+import { DynamicBreadcrumb } from "@/components/sidebar/breadcrumbs";
 import { adminRoles } from "@/server/auth/access/admin";
 
 export default async function AdminLayout({
@@ -55,7 +55,7 @@ export default async function AdminLayout({
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
             />
-            <Breadcrumbs />
+            <DynamicBreadcrumb />
           </div>
         </header>
         <main className="flex-1">
