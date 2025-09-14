@@ -11,55 +11,82 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@repo/ui/components/breadcrumb";
+import { api } from "@/trpc/react";
 
-// Example: replace IDs with human-readable names.
-// Swap this out for an async fetch if needed.
-const labelResolvers: Record<
-  string,
-  (segment: string) => string | Promise<string>
-> = {
-  // For numeric IDs under /projects/:id -> "Project #123" (or fetched name)
-  projects: (seg) => seg, // placeholder for folder, next segment resolves ID
-  users: (seg) => seg,
-};
-
-async function defaultResolver(segment: string): Promise<string> {
-  // Title-case fallback: "my-project" -> "My Project"
+function titleCase(segment: string) {
   return segment
     .split("-")
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
     .join(" ");
 }
 
-// Example async resolver registry for specific positions
-// You can key by path prefix to customize per route.
-async function resolveLabel(
-  pathParts: string[],
-  index: number,
-): Promise<string> {
-  const seg = pathParts[index];
+type UseBreadcrumbLabelsArgs = {
+  parts: string[];
+  hide?: (segment: string, index: number, parts: string[]) => boolean;
+};
 
-  // Example: if previous segment is "projects" and this segment looks like an ID, fetch name
-  const prev = index > 0 ? pathParts[index - 1] : "";
-  if (prev === "projects" && /^\d+$/.test(seg ?? "")) {
-    // Replace with real fetch: await getProjectName(seg)
-    return `Project #${seg}`;
-  }
-  if (prev === "users" && /^[a-f0-9-]{6,}$/.test(seg ?? "")) {
-    // Replace with real fetch: await getUserName(seg)
-    return `User ${seg?.slice(0, 6)}`;
-  }
+function useBreadcrumbLabels({ parts, hide }: UseBreadcrumbLabelsArgs) {
+  // Collect the IDs we need to resolve by looking at prev segment
+  const roomIdIndices = React.useMemo(() => {
+    const idxs: number[] = [];
+    for (let i = 0; i < parts.length; i++) {
+      if (hide && hide(parts[i] ?? "", i, parts)) continue;
+      const prev = i > 0 ? parts[i - 1] : "";
+      const seg = parts[i] ?? "";
+      if (prev === "rooms" && seg) idxs.push(i);
+    }
+    return idxs;
+  }, [parts, hide]);
 
-  // Default fallback
-  return defaultResolver(seg ?? "");
+  // Fire queries for rooms, one per index
+  const roomQueries = roomIdIndices.map((i) =>
+    api.rooms.get.useQuery(
+      { id: parts[i]! },
+      {
+        enabled: Boolean(parts[i]),
+        staleTime: 60_000,
+      },
+    ),
+  );
+
+  // Build labels
+  const labels = React.useMemo(() => {
+    const out: string[] = [];
+    for (let i = 0; i < parts.length; i++) {
+      if (hide && hide(parts[i] ?? "", i, parts)) {
+        out.push("");
+        continue;
+      }
+      const prev = i > 0 ? parts[i - 1] : "";
+      const seg = parts[i] ?? "";
+
+      if (prev === "rooms") {
+        const qIndex = roomIdIndices.indexOf(i);
+        const q = qIndex >= 0 ? roomQueries[qIndex] : undefined;
+        const name = q?.data?.name;
+        out.push(name ?? seg);
+        continue;
+      }
+
+      // Default
+      out.push(titleCase(seg));
+    }
+    return out;
+  }, [
+    parts,
+    hide,
+    roomIdIndices.join(","),
+    ...roomQueries.map((q) => q.data?.name),
+  ]);
+
+  const isLoading = roomQueries.some((q) => q.isLoading);
+
+  return { labels, isLoading };
 }
 
 type DynamicBreadcrumbProps = {
-  // Optionally override home label/href
   home?: { label?: string; href?: string };
-  // Optionally hide certain segments (e.g., "app")
   hide?: (segment: string, index: number, parts: string[]) => boolean;
-  // Optionally override href building
   hrefBuilder?: (parts: string[], index: number) => string;
 };
 
@@ -69,8 +96,34 @@ export function DynamicBreadcrumb({
   hrefBuilder,
 }: DynamicBreadcrumbProps) {
   const pathname = usePathname();
+  const parts = React.useMemo(
+    () => (pathname ?? "/").split("/").filter(Boolean),
+    [pathname],
+  );
 
-  // Guard for root
+  // Determine which indices are visible (respect home prefix + hide)
+  const homeParts = (home.href ?? "/").split("/").filter(Boolean);
+  const homePrefixMatches = homeParts.every((p, idx) => parts[idx] === p);
+  const baseIndex = homePrefixMatches ? homeParts.length : 0;
+
+  const visibleIndices = React.useMemo(
+    () =>
+      parts
+        .map((seg, i) => ({ seg, i }))
+        .filter(
+          ({ seg, i }) =>
+            i >= baseIndex && !(hide && hide(seg ?? "", i, parts)),
+        )
+        .map(({ i }) => i),
+    [parts, baseIndex, hide],
+  );
+
+  const { labels } = useBreadcrumbLabels({ parts, hide });
+
+  const buildHref =
+    hrefBuilder ??
+    ((ps: string[], idx: number) => "/" + ps.slice(0, idx + 1).join("/"));
+
   if (!pathname || pathname === "/") {
     return (
       <Breadcrumb>
@@ -83,43 +136,9 @@ export function DynamicBreadcrumb({
     );
   }
 
-  const parts = pathname.split("/").filter(Boolean);
-
-  const [labels, setLabels] = React.useState<string[]>([]);
-
-  React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const resolved = [];
-      for (let i = 0; i < parts.length; i++) {
-        if (hide && hide(parts[i] ?? "", i, parts)) {
-          resolved.push(""); // placeholder, will be skipped
-          continue;
-        }
-        resolved.push(await resolveLabel(parts, i));
-      }
-      if (mounted) setLabels(resolved);
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [pathname]);
-
-  function defaultHrefBuilder(ps: string[], idx: number) {
-    return "/" + ps.slice(0, idx + 1).join("/");
-  }
-
-  const buildHref = hrefBuilder ?? defaultHrefBuilder;
-
-  const visibleIndices = parts
-    .map((seg, i) => ({ seg, i }))
-    .filter(({ seg, i }) => !(hide && hide(seg, i, parts)))
-    .map(({ i }) => i);
-
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {/* Home */}
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link href={home.href ?? "/"}>{home.label ?? "Home"}</Link>
@@ -129,7 +148,7 @@ export function DynamicBreadcrumb({
         {visibleIndices.map((i, idx) => {
           const isLast = idx === visibleIndices.length - 1;
           const href = buildHref(parts, i);
-          const label = labels[i] ?? parts[i];
+          const label = labels[i] || parts[i];
 
           return (
             <React.Fragment key={i}>
