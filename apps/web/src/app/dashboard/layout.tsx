@@ -1,6 +1,5 @@
 import React from "react";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
-import { RoomSidebar } from "@/components/rooms/sidebar";
 import { Separator } from "@repo/ui/components/separator";
 import {
   SidebarInset,
@@ -48,22 +47,26 @@ export default async function AdminLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <DynamicBreadcrumb />
-          </div>
-        </header>
-        <main className="flex-1">
-          <div className="h-full w-full px-4">{children}</div>
-        </main>
-      </SidebarInset>
-      <RoomSidebar />
+      <div className="flex w-full">
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-4"
+              />
+              <DynamicBreadcrumb />
+            </div>
+          </header>
+          <main className="flex-1">
+            <div className="h-full w-full bg-blue-100 px-4 pb-4">
+              {children}
+            </div>
+          </main>
+        </SidebarInset>
+        <div id="secondary-sidebar-slot" className="relative z-0" />
+      </div>
     </SidebarProvider>
   );
 }

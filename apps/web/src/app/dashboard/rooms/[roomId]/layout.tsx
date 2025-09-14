@@ -1,5 +1,7 @@
 import React from "react";
 import { api, HydrateClient } from "@/trpc/server";
+import { RoomSidebar } from "@/components/rooms/sidebar";
+import { SidebarProvider, SidebarInset } from "@repo/ui/components/sidebar";
 
 export default async function RoomLayout({
   children,
@@ -13,7 +15,12 @@ export default async function RoomLayout({
 
   return (
     <HydrateClient>
-      <div>{children}</div>
+      <SidebarProvider id={`room-${roomId}`} defaultOpen>
+        <SidebarInset className="flex-1 bg-red-100">
+          <div>{children}</div>
+        </SidebarInset>
+        <RoomSidebar />
+      </SidebarProvider>
     </HydrateClient>
   );
 }

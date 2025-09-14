@@ -26,32 +26,14 @@ type UseBreadcrumbLabelsArgs = {
 };
 
 function useBreadcrumbLabels({ parts, hide }: UseBreadcrumbLabelsArgs) {
-  // Collect the IDs we need to resolve by looking at prev segment
-  const roomIdIndices = React.useMemo(() => {
-    const idxs: number[] = [];
-    for (let i = 0; i < parts.length; i++) {
-      if (hide && hide(parts[i] ?? "", i, parts)) continue;
-      const prev = i > 0 ? parts[i - 1] : "";
-      const seg = parts[i] ?? "";
-      if (prev === "rooms" && seg) idxs.push(i);
-    }
-    return idxs;
-  }, [parts, hide]);
-
-  // Fire queries for rooms, one per index
-  const roomQueries = roomIdIndices.map((i) =>
-    api.rooms.get.useQuery(
-      { id: parts[i]! },
-      {
-        enabled: Boolean(parts[i]),
-        staleTime: 60_000,
-      },
-    ),
-  );
+  // Use a single query to get all rooms we need, avoiding conditional hooks
+  const roomsQuery = api.rooms.list.useQuery(undefined);
 
   // Build labels
   const labels = React.useMemo(() => {
     const out: string[] = [];
+    const roomsData = roomsQuery.data ?? [];
+
     for (let i = 0; i < parts.length; i++) {
       if (hide && hide(parts[i] ?? "", i, parts)) {
         out.push("");
@@ -61,10 +43,9 @@ function useBreadcrumbLabels({ parts, hide }: UseBreadcrumbLabelsArgs) {
       const seg = parts[i] ?? "";
 
       if (prev === "rooms") {
-        const qIndex = roomIdIndices.indexOf(i);
-        const q = qIndex >= 0 ? roomQueries[qIndex] : undefined;
-        const name = q?.data?.name;
-        out.push(name ?? seg);
+        // Find the room data for this segment
+        const room = roomsData.find((r) => r.id === seg);
+        out.push(room?.name ?? seg);
         continue;
       }
 
@@ -72,14 +53,9 @@ function useBreadcrumbLabels({ parts, hide }: UseBreadcrumbLabelsArgs) {
       out.push(titleCase(seg));
     }
     return out;
-  }, [
-    parts,
-    hide,
-    roomIdIndices.join(","),
-    ...roomQueries.map((q) => q.data?.name),
-  ]);
+  }, [parts, hide, roomsQuery.data]);
 
-  const isLoading = roomQueries.some((q) => q.isLoading);
+  const isLoading = roomsQuery.isLoading;
 
   return { labels, isLoading };
 }
