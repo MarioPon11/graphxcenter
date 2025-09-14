@@ -1,5 +1,6 @@
 import React from "react";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { RoomSidebar } from "@/components/rooms/sidebar";
 import { Separator } from "@repo/ui/components/separator";
 import {
   SidebarInset,
@@ -62,6 +63,7 @@ export default async function AdminLayout({
           <div className="h-full w-full px-4">{children}</div>
         </main>
       </SidebarInset>
+      <RoomSidebar />
     </SidebarProvider>
   );
 }
