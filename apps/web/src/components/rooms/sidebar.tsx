@@ -5,7 +5,7 @@ import ReactDOM from "react-dom";
 import { Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-import { Calendars } from "@/components/rooms/calendars";
+import { Calendars } from "@/components/rooms/filters";
 import {
   Sidebar,
   SidebarContent,
