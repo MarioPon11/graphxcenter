@@ -60,7 +60,7 @@ export default async function AdminLayout({
             </div>
           </header>
           <main className="flex-1">
-            <div className="h-full w-full bg-blue-100 px-4 pb-4">
+            <div className="h-full w-full overflow-scroll px-4 pb-4">
               {children}
             </div>
           </main>
