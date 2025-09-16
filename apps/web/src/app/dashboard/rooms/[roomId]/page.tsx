@@ -18,7 +18,7 @@ const sampleEvents: CalendarEvent[] = [
       new Date().setDate(new Date().getDate() - new Date().getDay() + 1) +
         20 * 60000,
     ), // 20 minutes later
-    color: "primary",
+    variant: "primary",
   },
   {
     id: "2",
@@ -30,7 +30,7 @@ const sampleEvents: CalendarEvent[] = [
       new Date().setDate(new Date().getDate() - new Date().getDay() + 2) +
         50 * 60000,
     ), // 20 minutes duration
-    color: "secondary",
+    variant: "secondary",
   },
   {
     id: "3",
@@ -42,7 +42,7 @@ const sampleEvents: CalendarEvent[] = [
       new Date().setDate(new Date().getDate() - new Date().getDay() + 3) +
         80 * 60000,
     ), // 20 minutes duration
-    color: "accent",
+    variant: "accent",
   },
   {
     id: "4",
@@ -54,7 +54,7 @@ const sampleEvents: CalendarEvent[] = [
       new Date().setDate(new Date().getDate() - new Date().getDay() + 4) +
         110 * 60000,
     ), // 20 minutes duration
-    color: "chart-1",
+    variant: "chart-1",
   },
   {
     id: "5",
@@ -66,8 +66,8 @@ const sampleEvents: CalendarEvent[] = [
       new Date().setDate(new Date().getDate() - new Date().getDay() + 5) +
         140 * 60000,
     ), // 20 minutes duration
-    color: "chart-2",
     allDay: true,
+    variant: "chart-2",
   },
   {
     id: "6",
@@ -79,7 +79,7 @@ const sampleEvents: CalendarEvent[] = [
       new Date().setDate(new Date().getDate() - new Date().getDay() + 6) +
         170 * 60000,
     ), // 20 minutes duration
-    color: "chart-3",
+    variant: "chart-3",
   },
 ];
 

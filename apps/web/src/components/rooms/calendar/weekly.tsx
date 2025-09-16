@@ -9,7 +9,6 @@ import { cn } from "@repo/ui/lib/utils";
 interface WeeklyCalendarViewProps {
   events: CalendarEvent[];
   currentWeek: Date;
-  onEventClick?: (event: CalendarEvent) => void;
   className?: string;
 }
 
@@ -33,21 +32,17 @@ const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export function WeeklyCalendarView({
   events,
   currentWeek,
-  onEventClick,
   className,
 }: WeeklyCalendarViewProps) {
-  // Get the start of the week (Sunday)
   const startOfWeek = new Date(currentWeek);
   startOfWeek.setDate(currentWeek.getDate() - currentWeek.getDay());
 
-  // Generate the 7 days of the week
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const day = new Date(startOfWeek);
     day.setDate(startOfWeek.getDate() + i);
     return day;
   });
 
-  // Filter events for each day and calculate positioning
   const getEventsForDay = (day: Date) => {
     return events
       .filter((event) => {
@@ -60,10 +55,10 @@ export function WeeklyCalendarView({
         const endHour = event.endTime.getHours();
         const endMinute = event.endTime.getMinutes();
 
-        const top = ((startHour * 60 + startMinute) / 60) * 60; // 60px per hour
+        const top = ((startHour * 60 + startMinute) / 60) * 60;
         const duration =
           (endHour * 60 + endMinute - (startHour * 60 + startMinute)) / 60;
-        const height = Math.max(duration * 60, 20); // Minimum 20px height
+        const height = Math.max(duration * 60, 20);
 
         return {
           ...event,
@@ -78,15 +73,12 @@ export function WeeklyCalendarView({
 
   return (
     <div className={cn("bg-background flex flex-col", className)}>
-      {/* Header with days */}
       <div className="border-border grid grid-cols-[56px_repeat(7,minmax(0,1fr))]">
-        <div className="text-muted-foreground p-2 text-sm font-medium">
-          Time
-        </div>
+        <div className="text-muted-foreground p-2 text-sm font-medium" />
         {weekDays.map((day, index) => (
           <div
             key={day.toISOString()}
-            className="border-border border-b border-r p-2 text-center last:border-r-0"
+            className="border-border border-r border-b p-2 text-center last:border-r-0"
           >
             <div className="text-muted-foreground text-sm font-medium">
               {daysOfWeek[index]}
@@ -137,8 +129,8 @@ export function WeeklyCalendarView({
                   <CalendarEventComponent
                     key={event.id}
                     event={event}
-                    onClick={onEventClick}
                     style={event.style}
+                    variant={event.variant}
                   />
                 ))}
               </div>

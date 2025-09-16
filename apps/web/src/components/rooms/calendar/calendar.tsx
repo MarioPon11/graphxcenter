@@ -24,18 +24,9 @@ export function CalendarView({
   const [view] = useQueryState("view", parseAsString.withDefault("week"));
 
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-lg",
-        className,
-      )}
-    >
+    <div className={cn("overflow-hidden rounded-lg", className)}>
       {view === "week" ? (
-        <WeeklyCalendarView
-          events={events}
-          currentWeek={currentDate}
-          onEventClick={onEventClick}
-        />
+        <WeeklyCalendarView events={events} currentWeek={currentDate} />
       ) : (
         <MonthlyCalendarView
           events={events}

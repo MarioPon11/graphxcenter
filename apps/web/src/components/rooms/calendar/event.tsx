@@ -1,72 +1,129 @@
 "use client";
 
 import type React from "react";
+import { User2 } from "lucide-react";
 
 import { cn } from "@repo/ui/lib/utils";
+import { cva, type VariantProps } from "class-variance-authority";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/ui/components/avatar";
+import { Button } from "@repo/ui/components/button";
 
-export interface CalendarEvent {
+const eventVariants = cva(
+  "absolute right-0 left-0 mx-1 cursor-pointer rounded px-2 py-1 text-xs font-medium transition-colors duration-150 select-none min-h-fit overflow-hidden",
+  {
+    variants: {
+      variant: {
+        primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/90",
+        accent: "bg-accent text-accent-foreground hover:bg-accent/90",
+        "chart-1": "bg-chart-1 text-white hover:bg-chart-1/90",
+        "chart-2": "bg-chart-2 text-white hover:bg-chart-2/90",
+        "chart-3": "bg-chart-3 text-white hover:bg-chart-3/90",
+        "chart-4": "bg-chart-4 text-white hover:bg-chart-4/90",
+        "chart-5": "bg-chart-5 text-white hover:bg-chart-5/90",
+      },
+    },
+    defaultVariants: {
+      variant: "primary",
+    },
+  },
+);
+
+const avatarVariants = cva("rounded-full outline-2", {
+  variants: {
+    variant: {
+      primary: "outline-primary",
+      secondary: "outline-secondary",
+      accent: "outline-accent",
+      "chart-1": "outline-chart-1",
+      "chart-2": "outline-chart-2",
+      "chart-3": "outline-chart-3",
+      "chart-4": "outline-chart-4",
+      "chart-5": "outline-chart-5",
+    },
+  },
+});
+
+export type CalendarEvent = VariantProps<typeof eventVariants> & {
   id: string;
   title: string;
   startTime: Date;
   endTime: Date;
-  color?:
-    | "primary"
-    | "secondary"
-    | "accent"
-    | "chart-1"
-    | "chart-2"
-    | "chart-3"
-    | "chart-4"
-    | "chart-5";
   allDay?: boolean;
-}
-
-interface CalendarEventProps {
-  event: CalendarEvent;
-  onClick?: (event: CalendarEvent) => void;
-  className?: string;
-  style?: React.CSSProperties;
-}
-
-const eventColorClasses = {
-  primary: "bg-primary text-primary-foreground hover:bg-primary/90",
-  secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
-  accent: "bg-accent text-accent-foreground hover:bg-accent/90",
-  "chart-1": "bg-chart-1 text-white hover:bg-chart-1/90",
-  "chart-2": "bg-chart-2 text-white hover:bg-chart-2/90",
-  "chart-3": "bg-chart-3 text-white hover:bg-chart-3/90",
-  "chart-4": "bg-chart-4 text-white hover:bg-chart-4/90",
-  "chart-5": "bg-chart-5 text-white hover:bg-chart-5/90",
 };
+
+type CalendarEventProps = React.ComponentProps<"div"> &
+  VariantProps<typeof eventVariants> & {
+    event: CalendarEvent;
+    onClick?: (event: CalendarEvent) => void;
+    className?: string;
+    style?: React.CSSProperties;
+  };
 
 export function CalendarEvent({
   event,
+  variant,
   onClick,
   className,
-  style,
+  ...props
 }: CalendarEventProps) {
-  const colorClass = eventColorClasses[event.color || "primary"];
-
   return (
     <div
-      className={cn(
-        "absolute right-0 left-0 mx-1 cursor-pointer rounded px-2 py-1 text-xs font-medium transition-colors duration-150 select-none",
-        colorClass,
-        className,
-      )}
-      style={style}
+      className={cn(eventVariants({ variant }), className)}
       onClick={() => onClick?.(event)}
       title={`${event.title} - ${event.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} to ${event.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+      {...props}
     >
-      <div className="truncate">{event.title}</div>
-      {!event.allDay && (
-        <div className="truncate text-xs opacity-90">
-          {event.startTime.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+      <div className="relative h-full min-h-20">
+        <div className="truncate">{event.title}</div>
+        {!event.allDay && (
+          <div className="truncate text-xs opacity-90">
+            {event.startTime.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+        )}
+        <div className="bg-accent/30 absolute right-1 bottom-1 flex items-center rounded-full p-0.5">
+          <div className="flex -space-x-3">
+            <Avatar className={avatarVariants({ variant })}>
+              <AvatarImage />
+              <AvatarFallback>
+                <User2 className="size-4" />
+              </AvatarFallback>
+            </Avatar>
+            <Avatar className={avatarVariants({ variant })}>
+              <AvatarImage />
+              <AvatarFallback>
+                <User2 className="size-4" />
+              </AvatarFallback>
+            </Avatar>
+            <Avatar className={avatarVariants({ variant })}>
+              <AvatarImage />
+              <AvatarFallback>
+                <User2 className="size-4" />
+              </AvatarFallback>
+            </Avatar>
+            <Avatar className={avatarVariants({ variant })}>
+              <AvatarImage />
+              <AvatarFallback>
+                <User2 className="size-4" />
+              </AvatarFallback>
+            </Avatar>
+            <Button
+              variant="secondary"
+              className="text-muted-foreground hover:text-foreground flex h-fit items-center justify-center rounded-full bg-transparent px-3 pl-5 text-xs shadow-none hover:bg-black/10"
+            >
+              +3
+            </Button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
