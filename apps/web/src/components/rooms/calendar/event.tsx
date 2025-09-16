@@ -11,6 +11,11 @@ import {
   AvatarImage,
 } from "@repo/ui/components/avatar";
 import { Button } from "@repo/ui/components/button";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@repo/ui/components/tooltip";
 
 const eventVariants = cva(
   "absolute right-0 left-0 mx-1 cursor-pointer rounded px-2 py-1 text-xs font-medium transition-colors duration-150 select-none min-h-fit overflow-hidden",
@@ -73,23 +78,30 @@ export function CalendarEvent({
   ...props
 }: CalendarEventProps) {
   return (
-    <div
-      className={cn(eventVariants({ variant }), className)}
-      onClick={() => onClick?.(event)}
-      title={`${event.title} - ${event.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} to ${event.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
-      {...props}
-    >
-      <div className="relative h-full min-h-20">
-        <div className="truncate">{event.title}</div>
-        {!event.allDay && (
-          <div className="truncate text-xs opacity-90">
-            {event.startTime.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className={cn(eventVariants({ variant }), className)}
+          onClick={() => onClick?.(event)}
+          title={`${event.title} - ${event.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} to ${event.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+          {...props}
+        >
+          <div className="relative h-full min-h-20">
+            <div className="truncate">{event.title}</div>
+            {!event.allDay && (
+              <div className="truncate text-xs opacity-90">
+                {event.startTime.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+            )}
           </div>
-        )}
-        <div className="bg-accent/30 absolute right-1 bottom-1 flex items-center rounded-full p-0.5">
+        </div>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-[150px] text-center">
+        <p>{event.title}</p>
+        <div className="bg-accent/30 flex items-center rounded-full p-0.5">
           <div className="flex -space-x-3">
             <Avatar className={avatarVariants({ variant })}>
               <AvatarImage />
@@ -123,7 +135,7 @@ export function CalendarEvent({
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }

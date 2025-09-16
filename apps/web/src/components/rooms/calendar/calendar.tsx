@@ -6,6 +6,7 @@ import { MonthlyCalendarView } from "./monthly";
 import type { CalendarEvent } from "./event";
 import { useQueryState, parseAsString } from "@repo/ui/components/nuqs";
 import { cn } from "@repo/ui/lib/utils";
+import { TooltipProvider } from "@repo/ui/components/tooltip";
 
 interface CalendarViewProps {
   events: CalendarEvent[];
@@ -25,15 +26,17 @@ export function CalendarView({
 
   return (
     <div className={cn("overflow-hidden rounded-lg", className)}>
-      {view === "week" ? (
-        <WeeklyCalendarView events={events} currentWeek={currentDate} />
-      ) : (
-        <MonthlyCalendarView
-          events={events}
-          currentMonth={currentDate}
-          onEventClick={onEventClick}
-        />
-      )}
+      <TooltipProvider skipDelayDuration={100} delayDuration={400}>
+        {view === "week" ? (
+          <WeeklyCalendarView events={events} currentWeek={currentDate} />
+        ) : (
+          <MonthlyCalendarView
+            events={events}
+            currentMonth={currentDate}
+            onEventClick={onEventClick}
+          />
+        )}
+      </TooltipProvider>
     </div>
   );
 }
