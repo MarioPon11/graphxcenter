@@ -4,6 +4,9 @@ import React from "react";
 import { api } from "@/trpc/react";
 import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { Skeleton } from "@repo/ui/components/skeleton";
+import { EmptyState } from "@repo/ui/pages/empty-state";
+import { Button } from "@repo/ui/components/button";
+
 import { RoomCard } from "@/components/rooms/card";
 
 export function RoomsList() {
@@ -20,6 +23,11 @@ export function RoomsList() {
           {data?.map((room) => (
             <RoomCard key={room.id} room={room} />
           ))}
+          {data?.length === 0 && (
+            <EmptyState>
+              <Button>Create Room</Button>
+            </EmptyState>
+          )}
         </div>
       </ScrollArea>
     </div>

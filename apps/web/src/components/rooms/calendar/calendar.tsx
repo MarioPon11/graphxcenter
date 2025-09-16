@@ -20,11 +20,8 @@ export function CalendarView({
   onEventClick,
   className,
 }: CalendarViewProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useQueryState(
-    "view",
-    parseAsString.withDefault("week"),
-  );
+  const [currentDate] = useState(new Date());
+  const [view] = useQueryState("view", parseAsString.withDefault("week"));
 
   return (
     <div
