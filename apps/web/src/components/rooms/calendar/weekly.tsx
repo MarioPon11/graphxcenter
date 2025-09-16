@@ -79,14 +79,14 @@ export function WeeklyCalendarView({
   return (
     <div className={cn("bg-background flex flex-col", className)}>
       {/* Header with days */}
-      <div className="border-border grid grid-cols-8 border-b">
-        <div className="text-muted-foreground border-border border-r p-2 text-sm font-medium">
+      <div className="border-border grid grid-cols-[56px_repeat(7,minmax(0,1fr))]">
+        <div className="text-muted-foreground p-2 text-sm font-medium">
           Time
         </div>
         {weekDays.map((day, index) => (
           <div
             key={day.toISOString()}
-            className="border-border border-r p-2 text-center last:border-r-0"
+            className="border-border border-b border-r p-2 text-center last:border-r-0"
           >
             <div className="text-muted-foreground text-sm font-medium">
               {daysOfWeek[index]}
@@ -107,13 +107,13 @@ export function WeeklyCalendarView({
 
       {/* Time grid */}
       <div className="relative flex-1">
-        <div className="grid grid-cols-8">
+        <div className="grid grid-cols-[56px_repeat(7,minmax(0,1fr))]">
           {/* Time column */}
-          <div className="border-border border-r">
+          <div>
             {timeSlots.map((slot) => (
               <div
                 key={slot.hour}
-                className="border-border text-muted-foreground h-15 border-b p-2 text-xs"
+                className="text-muted-foreground h-15 p-2 text-xs"
               >
                 {slot.label}
               </div>

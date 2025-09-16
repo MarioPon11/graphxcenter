@@ -29,7 +29,7 @@ export function CalendarView({
   return (
     <div
       className={cn(
-        "border-border overflow-hidden rounded-lg border",
+        "overflow-hidden rounded-lg",
         className,
       )}
     >

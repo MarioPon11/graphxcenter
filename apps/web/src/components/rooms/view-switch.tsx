@@ -21,7 +21,7 @@ export function ViewSwitch({ className }: ViewSwitchProps) {
       type="single"
       value={view}
       onValueChange={setView}
-      className={cn("", className)}
+      className={cn("border", className)}
     >
       <ToggleGroupItem value="week">
         <Columns3 />

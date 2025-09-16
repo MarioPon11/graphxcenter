@@ -15,10 +15,20 @@ export const roomsRouter = createTRPCRouter({
     return rooms;
   }),
   get: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string(), limit: z.number().default(50) }))
     .query(async ({ ctx, input }) => {
       const room = await ctx.db.query.rooms.findFirst({
         where: eq(rooms.id, input.id),
+        with: {
+          roomRules: {
+            columns: {
+              startTime: true,
+              endTime: true,
+            },
+            where: (t, { or, isNotNull }) =>
+              or(isNotNull(t.startTime), isNotNull(t.endTime)),
+          },
+        },
       });
 
       return room;
