@@ -1,7 +1,6 @@
 import { relations } from "drizzle-orm";
 import { users, accounts, apikeys, twoFactors } from "./auth";
 import { rooms, roomApprovals, roomRules } from "./rooms";
-import { eventOccurrences, eventRecurrence, events } from "./events";
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
@@ -42,7 +41,6 @@ export const roomsRelations = relations(rooms, ({ many, one }) => ({
   }),
   roomApprovals: many(roomApprovals),
   roomRules: many(roomRules),
-  events: many(events),
 }));
 
 export const roomRulesRelations = relations(roomRules, ({ one }) => ({
@@ -70,54 +68,3 @@ export const roomApprovalsRelations = relations(roomApprovals, ({ one }) => ({
     references: [users.id],
   }),
 }));
-
-export const eventsRelations = relations(events, ({ many, one }) => ({
-  room: one(rooms, {
-    fields: [events.room],
-    references: [rooms.id],
-  }),
-  creator: one(users, {
-    fields: [events.createdBy],
-    references: [users.id],
-  }),
-  updater: one(users, {
-    fields: [events.updatedBy],
-    references: [users.id],
-  }),
-  eventRecurrence: many(eventRecurrence),
-}));
-
-export const eventRecurrenceRelations = relations(
-  eventRecurrence,
-  ({ one, many }) => ({
-    event: one(events, {
-      fields: [eventRecurrence.eventId],
-      references: [events.id],
-      relationName: "event",
-    }),
-    occurrences: many(eventOccurrences, {
-      relationName: "occurrences",
-    }),
-  }),
-);
-
-export const eventOccurrencesRelations = relations(
-  eventOccurrences,
-  ({ one }) => ({
-    event: one(events, {
-      fields: [eventOccurrences.eventId],
-      references: [events.id],
-      relationName: "event",
-    }),
-    modifiedBy: one(users, {
-      fields: [eventOccurrences.createdBy],
-      references: [users.id],
-      relationName: "modifiedBy",
-    }),
-    updatedBy: one(users, {
-      fields: [eventOccurrences.updatedBy],
-      references: [users.id],
-      relationName: "updatedBy",
-    }),
-  }),
-);
