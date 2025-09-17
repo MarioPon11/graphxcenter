@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import React, { useState } from "react";
 import { User2 } from "lucide-react";
 
 import { cn } from "@repo/ui/lib/utils";
@@ -16,6 +16,16 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@repo/ui/components/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@repo/ui/components/dialog";
+import type { events } from "@/server/db/schema";
 
 const eventVariants = cva(
   "absolute right-0 left-0 mx-1 cursor-pointer rounded px-2 py-1 text-xs font-medium transition-colors duration-150 select-none min-h-fit overflow-hidden",
@@ -54,13 +64,8 @@ const avatarVariants = cva("rounded-full outline-2", {
   },
 });
 
-export type CalendarEvent = VariantProps<typeof eventVariants> & {
-  id: string;
-  title: string;
-  startTime: Date;
-  endTime: Date;
-  allDay?: boolean;
-};
+export type CalendarEvent = VariantProps<typeof eventVariants> &
+  typeof events.$inferInsert;
 
 type CalendarEventProps = React.ComponentProps<"div"> &
   VariantProps<typeof eventVariants> & {
@@ -77,12 +82,17 @@ export function CalendarEvent({
   className,
   ...props
 }: CalendarEventProps) {
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const handleClick = () => {
+    setOpenDialog(true);
+    onClick?.(event);
+  };
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <div
           className={cn(eventVariants({ variant }), className)}
-          onClick={() => onClick?.(event)}
+          onClick={handleClick}
           title={`${event.title} - ${event.startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} to ${event.endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
           {...props}
         >
@@ -99,7 +109,7 @@ export function CalendarEvent({
           </div>
         </div>
       </TooltipTrigger>
-      <TooltipContent className="max-w-[150px] text-center">
+      <TooltipContent className="max-w-[150px] text-center" side="right">
         <p>{event.title}</p>
         <div className="bg-accent/30 flex items-center rounded-full p-0.5">
           <div className="flex -space-x-3">
@@ -136,6 +146,24 @@ export function CalendarEvent({
           </div>
         </div>
       </TooltipContent>
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{event.title}</DialogTitle>
+            <DialogDescription>
+              {event.startTime.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Tooltip>
   );
 }
