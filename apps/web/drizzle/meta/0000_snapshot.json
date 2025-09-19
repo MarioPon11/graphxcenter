@@ -1,5 +1,5 @@
 {
-  "id": "56dfe4b8-d047-482a-b669-94cd18bbd13b",
+  "id": "97cc9b8d-8c06-4541-b06b-adfa98067f04",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -539,15 +539,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "calendar_sync_states_calendar_id_accounts_account_id_fk": {
-          "name": "calendar_sync_states_calendar_id_accounts_account_id_fk",
+        "calendar_sync_states_calendar_id_accounts_id_fk": {
+          "name": "calendar_sync_states_calendar_id_accounts_id_fk",
           "tableFrom": "calendar_sync_states",
           "tableTo": "accounts",
           "columnsFrom": [
             "calendar_id"
           ],
           "columnsTo": [
-            "account_id"
+            "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"

@@ -178,7 +178,7 @@ export const conferencing = pgTable("conferencing", {
 export const calendarSyncStates = pgTable("calendar_sync_states", {
   id: uuid("id").primaryKey().defaultRandom(),
   calendarId: text("calendar_id")
-    .references(() => accounts.accountId, { onDelete: "cascade" })
+    .references(() => accounts.id, { onDelete: "cascade" })
     .notNull(),
   provider: varchar("provider", { enum: ["google"] }).notNull(),
   // Google incremental sync
