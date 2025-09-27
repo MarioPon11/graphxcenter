@@ -7,9 +7,7 @@ export default async function Rooms() {
 
   return (
     <HydrateClient>
-      <div>
-        <RoomsList />
-      </div>
+      <RoomsList />
     </HydrateClient>
   );
 }
