@@ -89,7 +89,7 @@ export function ProfileForm({ user }: { user: User }) {
       return;
     }
 
-    setStep((Number(step) + 1).toString());
+    void setStep((Number(step) + 1).toString());
   }
 
   async function onUploadSuccess(urls: string[]) {

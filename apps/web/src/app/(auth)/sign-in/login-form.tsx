@@ -37,7 +37,9 @@ import { toast } from "sonner";
 import { signIn } from "@/hooks/auth";
 
 const formSchema = z.object({
-  email: z.email(),
+  email: z.email().refine((email) => email.includes("@graphxsource"), {
+    error: "Only graphxsource emails are allowed",
+  }),
 });
 
 export function LoginForm({

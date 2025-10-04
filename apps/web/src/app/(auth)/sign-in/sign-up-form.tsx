@@ -81,6 +81,7 @@ export function SignUpForm({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     toast("Signin up with email");
+    sessionStorage.setItem(EMAIL_STORAGE_KEY, values.email);
     const res = await signUp.email({
       email: values.email,
       name: values.name,
