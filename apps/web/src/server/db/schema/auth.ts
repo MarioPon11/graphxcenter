@@ -18,8 +18,9 @@ export const users = pgTable("users", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
-  username: text("username").unique(),
-  displayUsername: text("display_username"),
+  phoneNumber: text("phone_number").unique(),
+  phoneNumberVerified: boolean("phone_number_verified"),
+  lastLoginMethod: text("last_login_method"),
   role: text("role"),
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
@@ -91,4 +92,76 @@ export const apikeys = pgTable("apikeys", {
   updatedAt: timestamp("updated_at").notNull(),
   permissions: text("permissions"),
   metadata: text("metadata"),
+});
+
+export const organizationRoles = pgTable("organization_roles", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organizations.id, { onDelete: "cascade" }),
+  role: text("role").notNull(),
+  permission: text("permission").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").$onUpdate(
+    () => /* @__PURE__ */ new Date(),
+  ),
+});
+
+export const teams = pgTable("teams", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organizations.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").$onUpdate(
+    () => /* @__PURE__ */ new Date(),
+  ),
+});
+
+export const teamMembers = pgTable("team_members", {
+  id: text("id").primaryKey(),
+  teamId: text("team_id")
+    .notNull()
+    .references(() => teams.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at"),
+});
+
+export const organizations = pgTable("organizations", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  logo: text("logo"),
+  createdAt: timestamp("created_at").notNull(),
+  metadata: text("metadata"),
+});
+
+export const members = pgTable("members", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organizations.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  role: text("role").default("member").notNull(),
+  createdAt: timestamp("created_at").notNull(),
+});
+
+export const invitations = pgTable("invitations", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organizations.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  role: text("role"),
+  teamId: text("team_id"),
+  status: text("status").default("pending").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  inviterId: text("inviter_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
 });

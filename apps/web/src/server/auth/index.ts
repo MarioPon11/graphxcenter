@@ -3,30 +3,27 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import {
   twoFactor,
-  username,
   magicLink,
-  emailOTP,
+  phoneNumber,
   admin,
   apiKey,
+  organization,
+  lastLoginMethod,
   multiSession,
   openAPI,
-  
 } from "better-auth/plugins";
-import { Profanity } from "@2toad/profanity";
 
 import { env } from "@/env/server";
 import { db, schema } from "@/server/db";
 import { APP_NAME } from "@/constants";
 import { getRedis } from "@/server/cache";
-import { hashBuffer, generateId, generateOTP } from "@/lib/id";
+import { hashBuffer, generateId } from "@/lib/id";
 import {
   SHORT_LIVED_TOKEN,
   LONG_LIVED_TOKEN,
   FRESH_TOKEN,
   MIN_PASSWORD_LENGTH,
   MAX_PASSWORD_LENGTH,
-  MIN_USERNAME_LENGTH,
-  MAX_USERNAME_LENGTH,
   API_KEY_LENGTH,
   API_KEY_MAX_NAME_LENGTH,
   API_KEY_MIN_NAME_LENGTH,
@@ -40,8 +37,9 @@ import {
   superUser,
   user,
 } from "./access/admin";
+import { organizationAccessControl } from "./access/organization";
 
-const profanity = new Profanity({ languages: ["en", "es"] });
+/* TODO: Add actual email sending logic*/
 
 export const auth = betterAuth({
   appName: APP_NAME,
@@ -162,30 +160,6 @@ export const auth = betterAuth({
         period: 60,
       },
     }),
-    username({
-      minUsernameLength: MIN_USERNAME_LENGTH,
-      maxUsernameLength: MAX_USERNAME_LENGTH,
-      validationOrder: {
-        username: "post-normalization",
-        displayUsername: "post-normalization",
-      },
-      usernameNormalization: (username) => {
-        return username.toLowerCase().replace(/[\s_]+/g, "-");
-      },
-      usernameValidator: async (username) => {
-        const isValid =
-          /^[a-zA-Z0-9-]+$/.test(username) && !profanity.exists(username);
-        return isValid;
-      },
-      displayUsernameNormalization: (username) => {
-        return username.toLowerCase().replace(/[\s_]+/g, "-");
-      },
-      displayUsernameValidator: async (username) => {
-        const isValid =
-          /^[a-zA-Z0-9-]+$/.test(username) && !profanity.exists(username);
-        return isValid;
-      },
-    }),
     magicLink({
       disableSignUp: true,
       storeToken: env.NODE_ENV === "production" ? "hashed" : "plain",
@@ -194,20 +168,13 @@ export const auth = betterAuth({
         console.log(email, token, url);
       },
     }),
-    emailOTP({
-      overrideDefaultEmailVerification: true,
-      allowedAttempts: 6,
-      expiresIn: SHORT_LIVED_TOKEN,
+    phoneNumber({
+      sendOTP: async ({ code, phoneNumber }) => {
+        console.log(code, phoneNumber);
+      },
+      requireVerification: false,
       otpLength: OTP_LENGTH,
-      storeOTP: env.NODE_ENV === "production" ? "hashed" : "plain",
-      sendVerificationOnSignUp: false,
-      generateOTP: () => {
-        console.log("Generating OTP");
-        return generateOTP(OTP_LENGTH);
-      },
-      sendVerificationOTP: async ({ email, otp, type }) => {
-        console.log("Sending verification OTP from plugin", email, otp, type);
-      },
+      expiresIn: SHORT_LIVED_TOKEN,
     }),
     apiKey({
       apiKeyHeaders: ["x-api-key"],
@@ -226,8 +193,58 @@ export const auth = betterAuth({
       minimumNameLength: API_KEY_MIN_NAME_LENGTH,
       requireName: true,
     }),
+    organization({
+      ac: organizationAccessControl,
+      allowUserToCreateOrganization: async (user) => {
+        const role = user.role;
+
+        if (adminRoles.includes(role ?? "")) {
+          return true;
+        }
+
+        return user.role === "superUser";
+      },
+      cancelPendingInvitationsOnReInvite: true,
+      dynamicAccessControl: {
+        enabled: true,
+      },
+      membershipLimit: 700,
+      invitationLimit: 1000,
+      organizationLimit: () => {
+        return false;
+      },
+      teams: {
+        enabled: true,
+        allowRemovingAllTeams: false,
+        defaultTeam: {
+          enabled: true,
+          customCreateDefaultTeam: async (organization) => {
+            return {
+              id: generateId(16),
+              name: "Default Team",
+              organizationId: organization.id,
+              createdAt: new Date(),
+            };
+          },
+        },
+      },
+      invitationExpiresIn: LONG_LIVED_TOKEN,
+      sendInvitationEmail: async ({
+        email,
+        id,
+        invitation,
+        inviter,
+        organization,
+        role,
+      }) => {
+        console.log(email, id, invitation, inviter, organization, role);
+      },
+    }),
     multiSession({
       maximumSessions: 5,
+    }),
+    lastLoginMethod({
+      storeInDatabase: true,
     }),
     openAPI(),
     admin({
