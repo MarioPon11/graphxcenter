@@ -10,6 +10,7 @@ import {
   apiKey,
   multiSession,
   openAPI,
+  
 } from "better-auth/plugins";
 import { Profanity } from "@2toad/profanity";
 
@@ -36,8 +37,7 @@ import {
   adminRoles,
   superAdmin,
   admin as adminRole,
-  developer,
-  manager,
+  superUser,
   user,
 } from "./access/admin";
 
@@ -235,8 +235,7 @@ export const auth = betterAuth({
       roles: {
         superAdmin,
         admin: adminRole,
-        developer,
-        manager,
+        superUser,
         user,
       },
       adminRoles,
