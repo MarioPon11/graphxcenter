@@ -13,7 +13,7 @@ import {
   SidebarRail,
 } from "@repo/ui/components/sidebar";
 import { APP_NAME } from "@/constants";
-import { Logo } from "@/components/icons";
+import { Gxsio } from "@repo/icons";
 import { auth } from "@/server/auth";
 import { adminRoles } from "@/server/auth/access/admin";
 
@@ -55,7 +55,7 @@ export async function AppSidebar({
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="pt-4 group-data-[collapsible=icon]:pt-2">
         <div className="flex items-center justify-center gap-2">
-          <Logo />
+          <Gxsio />
           <span className="group-data-[collapsible=icon]:hidden">
             {APP_NAME}
           </span>

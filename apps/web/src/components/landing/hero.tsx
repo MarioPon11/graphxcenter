@@ -6,7 +6,7 @@ import { BackgroundPattern } from "@/components/landing/background-pattern";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { APP_DESCRIPTION, APP_NAME, APP_SUMMARY } from "@/constants";
-import { Logo } from "@/components/icons";
+import { Gxsio } from "@repo/icons";
 
 export function Hero() {
   return (
@@ -14,7 +14,7 @@ export function Hero() {
       <BackgroundPattern />
 
       <Link href="/" className="flex items-center gap-2">
-        <Logo className="size-8" />
+        <Gxsio className="size-8" />
         <span className="text-2xl font-bold">{APP_NAME}</span>
       </Link>
       <div className="relative z-10 max-w-3xl text-center">

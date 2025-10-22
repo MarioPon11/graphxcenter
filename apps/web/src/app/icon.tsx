@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { Logo } from "@/components/icons/logo";
+import { Gxsio } from "@repo/icons";
 
 export const size = {
   width: 24,
@@ -9,7 +9,7 @@ export const size = {
 export const contentType = "image/png";
 
 export default function Icon() {
-  return new ImageResponse(<Logo width={size.width} height={size.height} />, {
+  return new ImageResponse(<Gxsio width={size.width} height={size.height} />, {
     width: size.width,
     height: size.height,
   });

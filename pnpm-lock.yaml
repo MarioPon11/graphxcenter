@@ -45,6 +45,9 @@ importers:
       '@remixicon/react':
         specifier: ^4.7.0
         version: 4.7.0(react@19.2.0)
+      '@repo/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui

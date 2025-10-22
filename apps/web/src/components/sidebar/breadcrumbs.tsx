@@ -11,54 +11,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@repo/ui/components/breadcrumb";
-import { api } from "@/trpc/react";
-
-function titleCase(segment: string) {
-  return segment
-    .split("-")
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join(" ");
-}
-
-type UseBreadcrumbLabelsArgs = {
-  parts: string[];
-  hide?: (segment: string, index: number, parts: string[]) => boolean;
-};
-
-function useBreadcrumbLabels({ parts, hide }: UseBreadcrumbLabelsArgs) {
-  // Use a single query to get all rooms we need, avoiding conditional hooks
-  const roomsQuery = api.rooms.list.useQuery(undefined);
-
-  // Build labels
-  const labels = React.useMemo(() => {
-    const out: string[] = [];
-    const roomsData = roomsQuery.data ?? [];
-
-    for (let i = 0; i < parts.length; i++) {
-      if (hide && hide(parts[i] ?? "", i, parts)) {
-        out.push("");
-        continue;
-      }
-      const prev = i > 0 ? parts[i - 1] : "";
-      const seg = parts[i] ?? "";
-
-      if (prev === "rooms") {
-        // Find the room data for this segment
-        const room = roomsData.find((r) => r.id === seg);
-        out.push(room?.name ?? seg);
-        continue;
-      }
-
-      // Default
-      out.push(titleCase(seg));
-    }
-    return out;
-  }, [parts, hide, roomsQuery.data]);
-
-  const isLoading = roomsQuery.isLoading;
-
-  return { labels, isLoading };
-}
 
 type DynamicBreadcrumbProps = {
   home?: { label?: string; href?: string };
@@ -94,8 +46,6 @@ export function DynamicBreadcrumb({
     [parts, baseIndex, hide],
   );
 
-  const { labels } = useBreadcrumbLabels({ parts, hide });
-
   const buildHref =
     hrefBuilder ??
     ((ps: string[], idx: number) => "/" + ps.slice(0, idx + 1).join("/"));
@@ -124,16 +74,18 @@ export function DynamicBreadcrumb({
         {visibleIndices.map((i, idx) => {
           const isLast = idx === visibleIndices.length - 1;
           const href = buildHref(parts, i);
-          const label = labels[i] || parts[i];
+          const label = parts[i];
 
           return (
             <React.Fragment key={i}>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage>{label}</BreadcrumbPage>
+                  <BreadcrumbPage className="capitalize">
+                    {label}
+                  </BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink asChild>
+                  <BreadcrumbLink asChild className="capitalize">
                     <Link href={href}>{label}</Link>
                   </BreadcrumbLink>
                 )}
