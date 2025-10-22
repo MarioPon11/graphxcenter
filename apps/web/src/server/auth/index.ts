@@ -40,7 +40,6 @@ import {
 import { organizationAccessControl } from "./access/organization";
 
 /* TODO: Add actual email sending logic*/
-
 export const auth = betterAuth({
   appName: APP_NAME,
   database: drizzleAdapter(db, {
@@ -78,10 +77,12 @@ export const auth = betterAuth({
         console.log(id);
       },
       afterDelete: async ({ id }) => {
+        /* TODO: Add actual email sending logic*/
         console.log(id);
       },
       deleteTokenExpiresIn: SHORT_LIVED_TOKEN,
       sendDeleteAccountVerification: async ({ token, url, user }) => {
+        /* TODO: Add actual email sending logic*/
         console.log(token, url, user);
       },
     },
@@ -159,17 +160,28 @@ export const auth = betterAuth({
         digits: 6,
         period: 60,
       },
+      otpOptions: {
+        allowedAttempts: 6,
+        digits: OTP_LENGTH,
+        period: SHORT_LIVED_TOKEN,
+        sendOTP: async ({ otp, user }) => {
+          /* TODO: Add actual email sending logic*/
+          console.log(otp, user);
+        },
+      },
     }),
     magicLink({
       disableSignUp: true,
       storeToken: env.NODE_ENV === "production" ? "hashed" : "plain",
       expiresIn: SHORT_LIVED_TOKEN,
       sendMagicLink: async ({ email, token, url }) => {
+        /* TODO: Add actual email sending logic*/
         console.log(email, token, url);
       },
     }),
     phoneNumber({
       sendOTP: async ({ code, phoneNumber }) => {
+        /* TODO: Add actual phone number verification logic */
         console.log(code, phoneNumber);
       },
       requireVerification: false,
@@ -237,6 +249,7 @@ export const auth = betterAuth({
         organization,
         role,
       }) => {
+        /* TODO: Add actual email sending logic*/
         console.log(email, id, invitation, inviter, organization, role);
       },
     }),
