@@ -10,7 +10,6 @@ import { auth } from "@/server/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DynamicBreadcrumb } from "@/components/sidebar/breadcrumbs";
-import { adminRoles } from "@/server/auth/access/admin";
 
 export default async function AdminLayout({
   children,
@@ -23,25 +22,6 @@ export default async function AdminLayout({
 
   if (!session) {
     redirect("/sign-in");
-  }
-
-  if (!session.user.username) {
-    redirect("/sign-up");
-  }
-
-  const accounts = await auth.api.listUserAccounts({
-    headers: await headers(),
-  });
-
-  if (accounts.length <= 1) {
-    redirect("/sign-up?step=2");
-  }
-
-  if (
-    adminRoles.includes(session.user.role ?? "") &&
-    !session.user.twoFactorEnabled
-  ) {
-    redirect("/sign-up?step=3");
   }
 
   return (

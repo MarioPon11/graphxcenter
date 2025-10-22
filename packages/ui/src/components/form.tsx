@@ -1,167 +1,164 @@
-"use client"
-
-import * as React from "react"
-import { Label as LabelPrimitive, Slot as SlotPrimitive } from "radix-ui"
+/* eslint-disable react/prop-types */
+"use client";
 
 import {
   Controller,
-  FormProvider,
-  useFormContext,
-  useFormState,
-  type ControllerProps,
-  type FieldPath,
-  type FieldValues,
-} from "react-hook-form"
+  ControllerProps,
+  FieldPath,
+  FieldValues,
+} from "react-hook-form";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@repo/ui/components/field";
+import { Input } from "@repo/ui/components/input";
+import { ReactNode } from "react";
+import { Textarea } from "@repo/ui/components/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/select";
+import { Checkbox } from "@repo/ui/components/checkbox";
 
-import { cn } from "@repo/ui/lib/utils"
-import { Label } from "@repo/ui/components/label"
-
-const Form = FormProvider
-
-type FormFieldContextValue<
+type FormControlProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TTransformedValues = TFieldValues,
 > = {
-  name: TName
-}
+  name: TName;
+  label: ReactNode;
+  description?: ReactNode;
+  control: ControllerProps<TFieldValues, TName, TTransformedValues>["control"];
+};
 
-const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue
-)
-
-const FormField = <
+type FormBaseProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TTransformedValues = TFieldValues,
+> = FormControlProps<TFieldValues, TName, TTransformedValues> & {
+  horizontal?: boolean;
+  controlFirst?: boolean;
+  children: (
+    field: Parameters<
+      ControllerProps<TFieldValues, TName, TTransformedValues>["render"]
+    >[0]["field"] & {
+      "aria-invalid": boolean;
+      id: string;
+    }
+  ) => ReactNode;
+};
+
+type FormControlFunc<
+  ExtraProps extends Record<string, unknown> = Record<never, never>,
+> = <
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TTransformedValues = TFieldValues,
+>(
+  props: FormControlProps<TFieldValues, TName, TTransformedValues> & ExtraProps
+) => ReactNode;
+
+function FormBase<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TTransformedValues = TFieldValues,
 >({
+  children,
+  control,
+  label,
+  name,
+  description,
+  controlFirst,
+  horizontal,
+}: FormBaseProps<TFieldValues, TName, TTransformedValues>) {
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field, fieldState }) => {
+        const labelElement = (
+          <>
+            <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+            {description && <FieldDescription>{description}</FieldDescription>}
+          </>
+        );
+        const control = children({
+          ...field,
+          id: field.name,
+          "aria-invalid": fieldState.invalid,
+        });
+        const errorElem = fieldState.invalid && (
+          <FieldError errors={[fieldState.error]} />
+        );
+
+        return (
+          <Field
+            data-invalid={fieldState.invalid}
+            orientation={horizontal ? "horizontal" : undefined}
+          >
+            {controlFirst ? (
+              <>
+                {control}
+                <FieldContent>
+                  {labelElement}
+                  {errorElem}
+                </FieldContent>
+              </>
+            ) : (
+              <>
+                <FieldContent>{labelElement}</FieldContent>
+                {control}
+                {errorElem}
+              </>
+            )}
+          </Field>
+        );
+      }}
+    />
+  );
+}
+
+export const FormInput: FormControlFunc = (props) => {
+  return <FormBase {...props}>{(field) => <Input {...field} />}</FormBase>;
+};
+
+export const FormTextarea: FormControlFunc = (props) => {
+  return <FormBase {...props}>{(field) => <Textarea {...field} />}</FormBase>;
+};
+
+export const FormSelect: FormControlFunc<{ children: ReactNode }> = ({
+  children,
   ...props
-}: ControllerProps<TFieldValues, TName>) => {
+}) => {
   return (
-    <FormFieldContext.Provider value={{ name: props.name }}>
-      <Controller {...props} />
-    </FormFieldContext.Provider>
-  )
-}
+    <FormBase {...props}>
+      {({ onChange, onBlur, ...field }) => (
+        <Select {...field} onValueChange={onChange}>
+          <SelectTrigger
+            aria-invalid={field["aria-invalid"]}
+            id={field.id}
+            onBlur={onBlur}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>{children}</SelectContent>
+        </Select>
+      )}
+    </FormBase>
+  );
+};
 
-const useFormField = () => {
-  const fieldContext = React.useContext(FormFieldContext)
-  const itemContext = React.useContext(FormItemContext)
-  const { getFieldState } = useFormContext()
-  const formState = useFormState({ name: fieldContext.name })
-  const fieldState = getFieldState(fieldContext.name, formState)
-
-  if (!fieldContext) {
-    throw new Error("useFormField should be used within <FormField>")
-  }
-
-  const { id } = itemContext
-
-  return {
-    id,
-    name: fieldContext.name,
-    formItemId: `${id}-form-item`,
-    formDescriptionId: `${id}-form-item-description`,
-    formMessageId: `${id}-form-item-message`,
-    ...fieldState,
-  }
-}
-
-type FormItemContextValue = {
-  id: string
-}
-
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
-)
-
-function FormItem({ className, ...props }: React.ComponentProps<"div">) {
-  const id = React.useId()
-
+export const FormCheckbox: FormControlFunc = (props) => {
   return (
-    <FormItemContext.Provider value={{ id }}>
-      <div
-        data-slot="form-item"
-        className={cn("grid gap-2", className)}
-        {...props}
-      />
-    </FormItemContext.Provider>
-  )
-}
-
-function FormLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) {
-  const { error, formItemId } = useFormField()
-
-  return (
-    <Label
-      data-slot="form-label"
-      data-error={!!error}
-      className={cn("data-[error=true]:text-destructive", className)}
-      htmlFor={formItemId}
-      {...props}
-    />
-  )
-}
-
-function FormControl({ ...props }: React.ComponentProps<typeof SlotPrimitive.Slot>) {
-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
-
-  return (
-    <SlotPrimitive.Slot
-      data-slot="form-control"
-      id={formItemId}
-      aria-describedby={
-        !error
-          ? `${formDescriptionId}`
-          : `${formDescriptionId} ${formMessageId}`
-      }
-      aria-invalid={!!error}
-      {...props}
-    />
-  )
-}
-
-function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
-  const { formDescriptionId } = useFormField()
-
-  return (
-    <p
-      data-slot="form-description"
-      id={formDescriptionId}
-      className={cn("text-muted-foreground text-sm", className)}
-      {...props}
-    />
-  )
-}
-
-function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
-  const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message ?? "") : props.children
-
-  if (!body) {
-    return null
-  }
-
-  return (
-    <p
-      data-slot="form-message"
-      id={formMessageId}
-      className={cn("text-destructive text-sm", className)}
-      {...props}
-    >
-      {body}
-    </p>
-  )
-}
-
-export {
-  useFormField,
-  Form,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-  FormField,
-}
+    <FormBase {...props} horizontal controlFirst>
+      {({ onChange, value, ...field }) => (
+        <Checkbox {...field} checked={value} onCheckedChange={onChange} />
+      )}
+    </FormBase>
+  );
+};
