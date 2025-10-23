@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { NuqsAdapter } from "@repo/ui/components/nuqs";
+import { NuqsNextAdapter as NuqsAdapter } from "@repo/ui/nuqs";
 
 export function NuqsProvider({ children }: { children: React.ReactNode }) {
   return <NuqsAdapter>{children}</NuqsAdapter>;
