@@ -7,6 +7,7 @@ import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { APP_DESCRIPTION, APP_NAME, APP_SUMMARY } from "@/constants";
 import { GxsCloud } from "@repo/icons";
+import { cn } from "@repo/ui/lib/utils";
 
 export function Hero() {
   return (
@@ -15,7 +16,19 @@ export function Hero() {
 
       <Link href="/" className="flex items-center gap-2">
         <GxsCloud className="size-8" />
-        <span className="text-2xl font-bold">{APP_NAME}</span>
+        <h3>
+          {APP_NAME.map((name, index) => (
+            <span
+              key={index}
+              className={cn(
+                "text-2xl font-bold",
+                index === APP_NAME.length - 1 && "font-normal italic",
+              )}
+            >
+              {name}
+            </span>
+          ))}
+        </h3>
       </Link>
       <div className="relative z-10 max-w-3xl text-center">
         <Badge

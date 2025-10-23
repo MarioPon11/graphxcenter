@@ -23,6 +23,7 @@ import { cn } from "@repo/ui/lib/utils";
 import { LoadingSwap } from "@repo/ui/components/loading-swap";
 import { GxsCloud } from "@repo/icons";
 import { SocialButtons } from "@/components/auth/social-buttons";
+import { APP_NAME } from "@/constants";
 
 const formSchema = z.object({
   email: z.email({ message: "Invalid email address" }),
@@ -107,9 +108,19 @@ export function EmailFormCard() {
       <CardHeader className="flex flex-col items-center justify-center gap-4 text-center">
         <div className="flex items-center gap-2">
           <GxsCloud className="size-8" />
-          <p className="text-lg font-bold">
-            Graphx<span className="font-normal">Cloud</span>
-          </p>
+          <h3>
+            {APP_NAME.map((name, index) => (
+              <span
+                key={index}
+                className={cn(
+                  "text-2xl font-bold",
+                  index === APP_NAME.length - 1 && "font-normal italic",
+                )}
+              >
+                {name}
+              </span>
+            ))}
+          </h3>
         </div>
         <div>
           <CardTitle className="text-2xl font-bold">
