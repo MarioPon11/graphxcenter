@@ -3,7 +3,7 @@ export * from "./facebook";
 export * from "./github";
 export * from "./gmail";
 export * from "./google";
-export * from "./gxsio";
+export * from "./gxs-cloud";
 export * from "./instagram";
 export * from "./linkedin";
 export * from "./openai";
