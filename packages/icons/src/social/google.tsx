@@ -1,14 +1,18 @@
 import React from "react";
-import { cn } from "@repo/icons/lib/utils";
 
-export function Google({ className, ...props }: React.SVGProps<SVGSVGElement>) {
+export function Google({
+  className,
+  viewBox = "0 0 48 48",
+  style = { display: "block" },
+  ...props
+}: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 48 48"
-      style={{ display: "block" }}
-      className={cn("size-4", className)}
+      viewBox={viewBox}
+      style={style}
+      className={className}
       {...props}
     >
       <path

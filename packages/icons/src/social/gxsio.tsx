@@ -1,5 +1,4 @@
 import React from "react";
-import { cn } from "@repo/icons/lib/utils";
 
 export function Gxsio({
   className,
@@ -7,7 +6,7 @@ export function Gxsio({
   ...props
 }: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg className={cn("size-6", className)} viewBox={viewBox} {...props}>
+    <svg className={className} viewBox={viewBox} {...props}>
       <g>
         <path
           fill="#38B8E5"
