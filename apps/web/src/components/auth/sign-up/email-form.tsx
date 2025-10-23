@@ -22,7 +22,7 @@ import {
 import { cn } from "@repo/ui/lib/utils";
 import { LoadingSwap } from "@repo/ui/components/loading-swap";
 import { GxsCloud } from "@repo/icons";
-import { SocialButtons } from "@/components/auth/social-buttons";
+import { SocialButtons } from "@/components/auth/sign-in/social-buttons";
 import { APP_NAME } from "@/constants";
 
 const formSchema = z.object({
@@ -54,7 +54,7 @@ function EmailForm({ className, ...props }: React.ComponentProps<"form">) {
       id="email-form"
       {...props}
     >
-      <CardContent>
+      <CardContent className="space-y-4">
         <SocialButtons />
         <div className="flex w-full items-center gap-4">
           <Separator className="flex-1" />

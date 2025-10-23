@@ -1,5 +1,7 @@
-import { EmailFormCard } from "./email-form";
-import { DetailsFormCard } from "./details-form";
+import { EmailFormCard } from "@/components/auth/sign-up/email-form";
+import { DetailsFormCard } from "@/components/auth/sign-up/details-form";
+import { Verification } from "@/components/auth/sign-up/verification";
+
 type Search = { [key: string]: string | string[] | undefined };
 
 export default async function SignInPage({
@@ -23,5 +25,9 @@ export default async function SignInPage({
         initialEmail={typeof emailParam === "string" ? emailParam : undefined}
       />
     );
+  }
+
+  if (step === "verification") {
+    return <Verification />;
   }
 }

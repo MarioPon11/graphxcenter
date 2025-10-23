@@ -12,7 +12,7 @@ import {
   FormPassword,
   FormCheckbox,
 } from "@repo/ui/components/form";
-import { SocialButtons } from "@/components/auth/social-buttons";
+import { SocialButtons } from "@/components/auth/sign-in/social-buttons";
 import { MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from "@/server/auth/config";
 import { Separator } from "@repo/ui/components/separator";
 

@@ -49,7 +49,7 @@ export function SocialButtons({
   ...props
 }: React.ComponentProps<"div">) {
   return (
-    <div className={cn("flex w-full flex-col gap-4", className)} {...props}>
+    <div className={cn("flex w-full flex-col gap-3", className)} {...props}>
       <SocialButton provider="google" />
       <SocialButton provider="github" />
     </div>

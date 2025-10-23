@@ -10,7 +10,7 @@ import {
 } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import { GxsCloud } from "@repo/icons";
-import { SignInForm } from "./form";
+import { SignInForm } from "@/components/auth/sign-in/form";
 import { APP_NAME } from "@/constants";
 import { cn } from "@repo/ui/lib/utils";
 
