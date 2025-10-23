@@ -15,7 +15,6 @@ import {
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from "@/server/auth/config";
 import { Separator } from "@repo/ui/components/separator";
-import { Toaster } from "@repo/ui/components/sonner";
 
 const formSchema = z.object({
   email: z
@@ -59,10 +58,7 @@ export function SignInForm({
       id="sign-in-form"
       {...props}
     >
-      <FieldGroup className="gap-2">
-        <SocialButtons provider="google" />
-        <SocialButtons provider="github" />
-      </FieldGroup>
+      <SocialButtons />
       <div className="flex w-full items-center gap-4">
         <Separator className="flex-1" />
         <p className="text-muted-foreground text-sm">or continue with</p>

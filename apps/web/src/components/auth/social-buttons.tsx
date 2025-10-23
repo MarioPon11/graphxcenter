@@ -3,6 +3,7 @@
 import React from "react";
 import { ActionButton } from "@repo/ui/components/action-button";
 import { Google, GitHub } from "@repo/icons";
+import { cn } from "@repo/ui/lib/utils";
 import { signIn } from "@/hooks/auth";
 
 type SocialProvider = "google" | "github";
@@ -15,9 +16,9 @@ type SocialButtonProps = Omit<
   size?: "sm" | "lg" | "default";
 };
 
-export function SocialButtons({
+export function SocialButton({
   provider,
-  size = "sm",
+  size = "default",
   variant = "outline",
   className,
   ...props
@@ -40,5 +41,17 @@ export function SocialButtons({
       {provider === "google" ? <Google /> : <GitHub />}
       <span>Continue with {provider}</span>
     </ActionButton>
+  );
+}
+
+export function SocialButtons({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div className={cn("flex w-full flex-col gap-4", className)} {...props}>
+      <SocialButton provider="google" />
+      <SocialButton provider="github" />
+    </div>
   );
 }
