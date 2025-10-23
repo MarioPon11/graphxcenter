@@ -15,6 +15,7 @@ import {
   FieldLabel,
 } from "@repo/ui/components/field";
 import { Input } from "@repo/ui/components/input";
+import { PasswordInput } from "@repo/ui/components/input-password";
 import { ReactNode } from "react";
 import { Textarea } from "@repo/ui/components/textarea";
 import {
@@ -100,6 +101,7 @@ function FormBase<
           <Field
             data-invalid={fieldState.invalid}
             orientation={horizontal ? "horizontal" : undefined}
+            className="gap-1"
           >
             {controlFirst ? (
               <>
@@ -123,18 +125,37 @@ function FormBase<
   );
 }
 
-export const FormInput: FormControlFunc = (props) => {
-  return <FormBase {...props}>{(field) => <Input {...field} />}</FormBase>;
-};
-
-export const FormTextarea: FormControlFunc = (props) => {
-  return <FormBase {...props}>{(field) => <Textarea {...field} />}</FormBase>;
-};
-
-export const FormSelect: FormControlFunc<{ children: ReactNode }> = ({
-  children,
+export const FormInput: FormControlFunc<{ placeholder?: string }> = ({
+  placeholder,
   ...props
 }) => {
+  return (
+    <FormBase {...props}>
+      {(field) => <Input {...field} placeholder={placeholder} />}
+    </FormBase>
+  );
+};
+
+export const FormPassword: FormControlFunc<{ placeholder?: string }> = ({
+  placeholder,
+  ...props
+}) => {
+  return (
+    <FormBase {...props}>
+      {(field) => <PasswordInput {...field} placeholder={placeholder} />}
+    </FormBase>
+  );
+  return (
+    <FormBase {...props}>
+      {(field) => <Textarea {...field} placeholder={placeholder} />}
+    </FormBase>
+  );
+};
+
+export const FormSelect: FormControlFunc<{
+  children: ReactNode;
+  placeholder?: string;
+}> = ({ children, placeholder, ...props }) => {
   return (
     <FormBase {...props}>
       {({ onChange, onBlur, ...field }) => (
@@ -144,7 +165,7 @@ export const FormSelect: FormControlFunc<{ children: ReactNode }> = ({
             id={field.id}
             onBlur={onBlur}
           >
-            <SelectValue />
+            <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>{children}</SelectContent>
         </Select>
