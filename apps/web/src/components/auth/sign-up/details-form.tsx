@@ -70,14 +70,34 @@ function DetailsForm({ className, initialEmail, ...props }: DetailsFormProps) {
   });
 
   async function onSubmit(data: FormData) {
-    const res = await signUp.email({
-      ...data,
-    });
-    if (res.error) {
-      toast.error(res.error.message);
-    } else {
-      router.push("/sign-up?step=verification");
-    }
+    await signUp.email(
+      {
+        ...data,
+      },
+      {
+        onError: (error) => {
+          if (error.error.status === 409) {
+            toast.error("Email is already in use");
+            form.setError("email", { message: "Email is already in use" });
+          }
+          if (error.error.status === 400) {
+            toast.error("Invalid email address");
+            form.setError("email", { message: "Invalid email address" });
+          }
+          if (error.error.status === 401) {
+            toast.error("Invalid password");
+            form.setError("password", { message: "Invalid password" });
+          }
+          if (error.error.status === 403) {
+            toast.error("Invalid email address");
+            form.setError("email", { message: "Invalid email address" });
+          }
+        },
+        onSuccess: () => {
+          router.push("/sign-up?step=verification");
+        },
+      },
+    );
   }
 
   function handleBack() {

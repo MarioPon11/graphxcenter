@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { TRPCError } from "@trpc/server";
+import { toast } from "sonner";
 
 import { FieldGroup } from "@repo/ui/components/field";
 import { FormInput } from "@repo/ui/components/form";
@@ -22,16 +24,28 @@ import {
 import { cn } from "@repo/ui/lib/utils";
 import { LoadingSwap } from "@repo/ui/components/loading-swap";
 import { GxsCloud } from "@repo/icons";
+
+import { api } from "@/trpc/react";
 import { SocialButtons } from "@/components/auth/sign-in/social-buttons";
 import { APP_NAME } from "@/constants";
 
 const formSchema = z.object({
-  email: z.email({ message: "Invalid email address" }),
+  email: z
+    .email({ message: "Invalid email address" })
+    .refine(
+      (val) =>
+        val.endsWith("@graphxsource.com") || val.endsWith("@graphxsource.hn"),
+      {
+        message: "Only graphxsource email addresses are allowed",
+      },
+    ),
 });
+
 type FormData = z.infer<typeof formSchema>;
 
 function EmailForm({ className, ...props }: React.ComponentProps<"form">) {
   const router = useRouter();
+  const { mutateAsync } = api.auth.signUp.checkEmail.useMutation();
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -40,11 +54,18 @@ function EmailForm({ className, ...props }: React.ComponentProps<"form">) {
   });
 
   async function onSubmit(data: FormData) {
-    //TODO: Implement email verification logic
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    router.push(
-      `/sign-up?step=details&email=${encodeURIComponent(data.email)}`,
-    );
+    try {
+      const res = await mutateAsync(data);
+      if (res) {
+        router.push(
+          `/sign-up?step=details&email=${encodeURIComponent(data.email)}`,
+        );
+      }
+    } catch (error) {
+      if (error instanceof TRPCError) {
+        toast.error(error.message);
+      }
+    }
   }
 
   return (
@@ -71,7 +92,11 @@ function EmailForm({ className, ...props }: React.ComponentProps<"form">) {
         </FieldGroup>
       </CardContent>
       <CardFooter className="flex-col gap-6">
-        <Button className="w-full" type="submit">
+        <Button
+          className="w-full"
+          type="submit"
+          disabled={form.formState.isSubmitting}
+        >
           <LoadingSwap isLoading={form.formState.isSubmitting}>
             Continue
           </LoadingSwap>
