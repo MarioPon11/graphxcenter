@@ -9,6 +9,7 @@ import {
   Text,
   Link,
   Container,
+  Button,
   Hr,
 } from "@react-email/components";
 import { Font, Tailwind } from "../components";
@@ -25,14 +26,9 @@ import { Font, Tailwind } from "../components";
  * @property {string} [urls.privacy] - (Optional) URL for the privacy policy.
  * @property {string} [urls.contact] - (Optional) URL for the contact page.
  */
-export interface MagicLinkEmailProps {
+export interface PasswordResetEmailProps {
   name: string;
-  loginCode: string;
-  /**
-   * Time until the login code expires, including the unit (e.g., "5 minutes", "1 hour").
-   * This will be shown to the user in the email, if provided.
-   */
-  expiresAt?: string;
+  signInLink: string;
   /**
    * Optional set of URLs for use in the email, including login base URL and helpful links.
    */
@@ -67,9 +63,8 @@ export interface MagicLinkEmailProps {
   };
 }
 
-export const MagicLinkEmail = ({
-  loginCode,
-  expiresAt,
+export const PasswordResetEmail = ({
+  signInLink,
   name,
   urls = {
     baseUrl: "http://localhost:3000",
@@ -77,12 +72,12 @@ export const MagicLinkEmail = ({
       "https://files.graphxsourcehndev.com/assets/calendar/emails/logo-long-muted.png",
     logo: "https://files.graphxsourcehndev.com/assets/calendar/emails/logo-long.png",
   },
-}: MagicLinkEmailProps) => (
+}: PasswordResetEmailProps) => (
   <Html>
     <Tailwind>
       <Head>
         <Font />
-        <title>Your login code</title>
+        <title>Your password has been reset</title>
       </Head>
       <Body className="bg-background text-foreground px-10">
         <Container className="mx-auto max-w-[550px] my-10">
@@ -99,11 +94,22 @@ export const MagicLinkEmail = ({
           <Section id="content">
             <Text className="text-muted">Hi {name},</Text>
             <Text className="text-muted">
-              Below your OTP to securely log in. It&apos;s valid for the next{" "}
-              <b>{expiresAt}</b>. If you didn&apos;t request this, please secure
-              your account immediately.
+              Your new password has been set successfully. If you didn&apos;t
+              make this action, please contact our support team at{" "}
+              <Link
+                href="mailto:support@graphxserver.io"
+                className="underline hover:no-underline text-muted"
+              >
+                development@graphxsource.hn
+              </Link>
+              .
             </Text>
-            <Text className="font-bold text-2xl">{loginCode}</Text>
+            <Button
+              href={signInLink}
+              className="bg-primary text-primary-foreground px-4 py-2 text-sm rounded-md"
+            >
+              Sign In
+            </Button>
             <Text className="text-muted">
               Best regards,
               <br />
@@ -165,9 +171,9 @@ export const MagicLinkEmail = ({
   </Html>
 );
 
-MagicLinkEmail.PreviewProps = {
+PasswordResetEmail.PreviewProps = {
   name: "John Doe",
-  loginCode: "050069",
+  signInLink: "https://www.graphxsource.com/reset-password",
   expiresAt: "5 minutes",
   urls: {
     baseUrl: "http://localhost:3000",
@@ -178,6 +184,6 @@ MagicLinkEmail.PreviewProps = {
     privacy: "https://www.graphxsource.com/privacy",
     contact: "https://www.graphxsource.com/contact",
   },
-} as MagicLinkEmailProps;
+} as PasswordResetEmailProps;
 
-export default MagicLinkEmail;
+export default PasswordResetEmail;
