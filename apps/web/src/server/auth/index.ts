@@ -41,7 +41,7 @@ import { organizationAccessControl } from "./access/organization";
 
 /* TODO: Add actual email sending logic*/
 export const auth = betterAuth({
-  appName: APP_NAME,
+  appName: APP_NAME.join(""),
   database: drizzleAdapter(db, {
     provider: "pg",
     usePlural: true,
@@ -150,7 +150,7 @@ export const auth = betterAuth({
   plugins: [
     nextCookies(),
     twoFactor({
-      issuer: APP_NAME,
+      issuer: APP_NAME.join(""),
       backupCodeOptions: {
         amount: 10,
         length: 12,
